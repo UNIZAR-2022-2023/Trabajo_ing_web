@@ -8,3 +8,5 @@ class NotSafeURL (val url: String) : Exception("[$url] is not safe")
 class NotValidated (val url: String): Exception("[$url] has not validated yet")
 
 class NotSafeId (private val key: String): Exception("[$key] has an insecure URL")
+
+class TooManyRedirections(val key: String) : Exception(" [$key] has too many redirections")

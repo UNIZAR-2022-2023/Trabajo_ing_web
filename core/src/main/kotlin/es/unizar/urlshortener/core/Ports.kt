@@ -23,7 +23,10 @@ interface ShortUrlRepositoryService {
  */
 interface ValidatorService {
     fun isValid(url: String): Boolean
+    fun isReachable(url: String): Boolean
+    fun isSecure(url: String): Boolean
 }
+
 
 /**
  * [HashService] is the port to the service that creates a hash from a URL.
@@ -32,4 +35,14 @@ interface ValidatorService {
  */
 interface HashService {
     fun hasUrl(url: String): String
+}
+
+/**
+ * [RedirectionLimitService] is the port that limit the number of redirection to a url.
+ *
+ * **Note**: It is a design decision to create this port. It could be part of the core .
+ */
+interface RedirectionLimitService {
+    fun addLimit(hash : String, limit : Int)
+    fun proveLimit(hash : String)
 }

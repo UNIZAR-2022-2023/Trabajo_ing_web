@@ -8,7 +8,9 @@ import java.time.OffsetDateTime
 data class Click(
     val hash: String,
     val properties: ClickProperties = ClickProperties(),
-    val created: OffsetDateTime = OffsetDateTime.now()
+    val created: OffsetDateTime = OffsetDateTime.now(),
+    val limit: Int? = null
+
 )
 
 /**
