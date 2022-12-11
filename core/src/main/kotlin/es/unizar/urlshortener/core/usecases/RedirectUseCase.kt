@@ -21,8 +21,7 @@ class RedirectUseCaseImpl(
     private val shortUrlRepository: ShortUrlRepositoryService
 ) : RedirectUseCase {
     override fun redirectTo(key: String) = shortUrlRepository
-        .findByKey(key)
+        .findByHash(key)
         ?.redirection
         ?: throw RedirectionNotFound(key)
 }
-

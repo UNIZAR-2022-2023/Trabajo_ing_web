@@ -11,7 +11,8 @@ interface ClickRepositoryService {
  * [ShortUrlRepositoryService] is the port to the repository that provides management to [ShortUrl][ShortUrl].
  */
 interface ShortUrlRepositoryService {
-    fun findByKey(id: String): ShortUrl?
+    fun findByHash(hash: String): ShortUrl?
+    fun findByUrl(url: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
 }
 

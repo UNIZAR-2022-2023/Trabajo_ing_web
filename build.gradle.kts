@@ -40,7 +40,17 @@ subprojects {
     }
 }
 
-project(":core") { }
+project(":core") {
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    dependencies {
+        "implementation"("com.fasterxml.jackson.module:jackson-module-kotlin")
+        "implementation"("org.springframework.boot:spring-boot-starter-web")
+    }
+    tasks.getByName<BootJar>("bootJar") {
+        enabled = false
+    }
+}
 
 project(":repositories") {
     apply(plugin = "org.springframework.boot")
