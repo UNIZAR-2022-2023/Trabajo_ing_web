@@ -17,6 +17,8 @@ interface SecurityUseCase {
     fun isValidated(hash: String): Boolean
 
     fun isSecureHash(hash: String): Boolean
+
+    fun isReachableURL(hash: String): Boolean
 }
 
 /**
@@ -65,6 +67,18 @@ class SecurityUseCaseImpl (
     override fun isSecureHash(hash: String): Boolean {
         val shortUrlData = shortUrlRepository.findByHash(hash)!!
         return shortUrlData.properties.safe == "safe"
+    }
+
+    /**
+     * Returns true only if the URL associated is reachable
+     */
+    override fun isReachableURL(url: String): Boolean {
+        return try {
+            val resp = restTemplate.getForEntity(url, String::class.java)
+            resp.statusCode.is2xxSuccessful
+        } catch (e: Exception){
+            false
+        }
     }
 }
 
