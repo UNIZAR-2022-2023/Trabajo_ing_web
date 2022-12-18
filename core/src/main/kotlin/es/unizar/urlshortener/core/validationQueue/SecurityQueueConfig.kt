@@ -1,4 +1,4 @@
-package es.unizar.urlshortener.core.security
+package es.unizar.urlshortener.core.validationQueue
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,9 +20,6 @@ import java.util.concurrent.LinkedBlockingQueue
 @EnableScheduling
 // open is for disable an error
 open class SecurityQueueConfig {
-
-    @Bean("a")
-    open fun securityQueue(): BlockingQueue<String> = LinkedBlockingQueue()
 
     @Bean("executorConfig")
     open fun executor(): Executor {

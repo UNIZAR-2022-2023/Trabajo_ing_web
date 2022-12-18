@@ -3,8 +3,10 @@ package es.unizar.urlshortener
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
 import es.unizar.urlshortener.core.usecases.LogClickUseCaseImpl
 import es.unizar.urlshortener.core.usecases.RedirectUseCaseImpl
-import es.unizar.urlshortener.core.usecases.SecurityUseCaseImpl
+import es.unizar.urlshortener.core.validationQueue.Queue
+import es.unizar.urlshortener.core.validationQueue.SecurityQueue
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
+import es.unizar.urlshortener.infrastructure.delivery.SecurityServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
@@ -12,7 +14,10 @@ import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityReposito
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServiceImpl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.stereotype.Component
 
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
@@ -20,6 +25,9 @@ import org.springframework.context.annotation.Configuration
  * **Note**: Spring Boot is able to discover this [Configuration] without further configuration.
  */
 @Configuration
+@EnableScheduling
+// So Spring can scan where the Component with the Scheduled is
+@ComponentScan("es.unizar.urlshortener.core.validationQueue")
 class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
     @Autowired val clickEntityRepository: ClickEntityRepository
@@ -47,5 +55,8 @@ class ApplicationConfiguration(
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService(), hashService())
 
     @Bean
-    fun securityUseCase() = SecurityUseCaseImpl(shortUrlRepositoryService())
+    fun securityServiceImpl() = SecurityServiceImpl(shortUrlRepositoryService())
+
+/*    @Bean
+    fun securityQueue() = SecurityQueue(shortUrlRepositoryService(), securityServiceImpl(), Queue())*/
 }

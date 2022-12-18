@@ -1,12 +1,9 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
-import es.unizar.urlshortener.core.ClickProperties
-import es.unizar.urlshortener.core.ShortUrlProperties
+import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
-import es.unizar.urlshortener.core.usecases.SecurityUseCase
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -30,16 +27,14 @@ interface UrlShortenerController {
      *
      * **Note**: Delivery of use cases [RedirectUseCase] and [LogClickUseCase].
      */
-    fun redirectTo(id: String, request: HttpServletRequest): ResponseEntity<String>
+    fun redirectTo(id: String, request: HttpServletRequest): ResponseEntity<Void>
 
     /**
-     * Creates a short url
- from details provided in [data].
+     * Creates a short url from details provided in [data].
      *
      * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
-
 }
 
 /**
@@ -68,29 +63,26 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
-    val securityUseCase: SecurityUseCase
+    val securityService: SecurityService,
+    val securityQueue: BlockingQueue<String>
 ) : UrlShortenerController {
-
-    @Autowired
-    val securityQueue: BlockingQueue<String>?= null
-
     @GetMapping("/{id:(?!api|index).*}")
-    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<String> =
+    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
             val h = HttpHeaders()
 
-            if (securityUseCase.isValidated(id)) {
+            if (securityService.isValidated(id)) {
                 // URL has been validated
-                if (securityUseCase.isSecureHash(id)) {
+                if (securityService.isSecureHash(id)) {
                     // URL is safe
                     h.location = URI.create(it.target)
-                    ResponseEntity<String>(h, HttpStatus.valueOf(it.mode))
+                    ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
                 } else {
-                    ResponseEntity<String>(h, HttpStatus.FORBIDDEN)
+                    throw NotSafeUrl(id)
                 }
             } else {
-                ResponseEntity<String>("{ \"error\": \"URI de destino no validada todavia\" }", h, HttpStatus.BAD_REQUEST)
+                throw NotValidatedUrl(id)
             }
         }
 
@@ -109,7 +101,7 @@ class UrlShortenerControllerImpl(
 
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
-            securityQueue?.put(data.url)
+            securityQueue.put(data.url)
 
             val response = ShortUrlDataOut(
                 url = url

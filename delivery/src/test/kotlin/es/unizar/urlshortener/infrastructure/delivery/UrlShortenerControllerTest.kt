@@ -4,7 +4,8 @@ import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
-import es.unizar.urlshortener.core.usecases.SecurityUseCase
+import es.unizar.urlshortener.core.validationQueue.Queue
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
@@ -24,10 +25,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 @WebMvcTest
 @ContextConfiguration(
     classes = [
+        Queue::class,
         UrlShortenerControllerImpl::class,
         RestResponseEntityExceptionHandler::class]
 )
-
 class UrlShortenerControllerTest {
 
     @Autowired
@@ -43,7 +44,7 @@ class UrlShortenerControllerTest {
     private lateinit var createShortUrlUseCase: CreateShortUrlUseCase
 
     @MockBean
-    private lateinit var securityUseCase: SecurityUseCase
+    private lateinit var securityService: SecurityService
 
     /**
      * Test de GET /{id}
@@ -51,8 +52,8 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns a redirect when the key exists and is secure`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
-        given(securityUseCase.isValidated("key")).willReturn(true)
-        given(securityUseCase.isSecureHash("key")).willReturn(true)
+        given(securityService.isValidated("key")).willReturn(true)
+        given(securityService.isSecureHash("key")).willReturn(true)
 
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isTemporaryRedirect)
@@ -76,8 +77,8 @@ class UrlShortenerControllerTest {
 
     @Test
     fun `redirectTo returns forbidden when the key exists but is not secure`() {
-        given(securityUseCase.isValidated("key")).willReturn(true)
-        given(securityUseCase.isSecureHash("key")).willReturn(false)
+        given(redirectUseCase.redirectTo("key"))
+            .willAnswer { throw NotSafeUrl("key") }
 
         mockMvc.perform(get("/{id}", "key"))
             .andDo(print())
@@ -87,16 +88,15 @@ class UrlShortenerControllerTest {
         verify(logClickUseCase, never()).logClick("key", ClickProperties(ip = "127.0.0.1"))
     }
 
-    @Disabled
     @Test
     fun `redirectTo returns bad request when the key exists but is not validated`() {
-        given(securityUseCase.isValidated("key")).willReturn(false)
+        given(redirectUseCase.redirectTo("key"))
+            .willAnswer { throw NotValidatedUrl("key") }
 
         mockMvc.perform(get("/{id}", "key"))
             .andDo(print())
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
-            .andExpect(content().json("{ \"error\": \"URI de destino no validada todavia\" }"))
 
         verify(logClickUseCase, never()).logClick("key", ClickProperties(ip = "127.0.0.1"))
     }
@@ -104,7 +104,6 @@ class UrlShortenerControllerTest {
     /**
      * Test de POST /api/link
      */
-    @Disabled
     @Test
     fun `creates returns a basic redirect if it can compute a hash`() {
         given(
@@ -125,7 +124,6 @@ class UrlShortenerControllerTest {
             .andExpect(jsonPath("$.url").value("http://localhost/f684a3c4"))
     }
 
-    @Disabled
     @Test
     fun `creates returns bad request if it cant compute a hash`() {
         given(
@@ -144,25 +142,13 @@ class UrlShortenerControllerTest {
             .andExpect(jsonPath("$.statusCode").value(400))
     }
 
-    @Disabled
+    /**
+     * Test the requests against the Google Safe Browsing
+     */
     @Test
-    fun `creates returns bad request if it is not validated`() {
-        given(
-            createShortUrlUseCase.create(
-                url = "http://example.com/",
-                data = ShortUrlProperties(ip = "127.0.0.1", safe = "not validated")
-            )
-        )
-    }
-
     @Disabled
-    @Test
-    fun `creates returns bad request if it is not secure`() {
-        given(
-            createShortUrlUseCase.create(
-                url = "http://example.com/",
-                data = ShortUrlProperties(ip = "127.0.0.1", safe = "not validated")
-            )
-        )
+    fun `Safe browsing works propertly`() {
+        assertEquals(true, securityService.isSecureUrl("http://example.com/"))
+        assertEquals(false, securityService.isSecureUrl("http://google-analysis.info"))
     }
 }
