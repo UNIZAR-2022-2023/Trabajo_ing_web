@@ -12,7 +12,7 @@ plugins {
 group = "es.unizar"
 version = "0.2022.1-SNAPSHOT"
 
-var mockitoVersion = "4.0.0"
+var mockitoVersion = "4.1.0"
 var bootstrapVersion = "3.4.0"
 var jqueryVersion = "3.6.1"
 var guavaVersion = "31.1-jre"
@@ -40,7 +40,17 @@ subprojects {
     }
 }
 
-project(":core") { }
+project(":core") {
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    dependencies {
+        "implementation"("com.fasterxml.jackson.module:jackson-module-kotlin")
+        "implementation"("org.springframework.boot:spring-boot-starter-web")
+    }
+    tasks.getByName<BootJar>("bootJar") {
+        enabled = false
+    }
+}
 
 project(":repositories") {
     apply(plugin = "org.springframework.boot")

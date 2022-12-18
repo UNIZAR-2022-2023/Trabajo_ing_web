@@ -18,7 +18,8 @@ interface CreateShortUrlUseCase {
 class CreateShortUrlUseCaseImpl(
     private val shortUrlRepository: ShortUrlRepositoryService,
     private val validatorService: ValidatorService,
-    private val hashService: HashService
+    private val hashService: HashService,
+    private val redirectionLimitService: RedirectionLimitService
 ) : CreateShortUrlUseCase {
     override fun create(url: String, data: ShortUrlProperties): ShortUrl =
         if (validatorService.isValid(url)) {
@@ -29,9 +30,13 @@ class CreateShortUrlUseCaseImpl(
                 properties = ShortUrlProperties(
                     safe = data.safe,
                     ip = data.ip,
-                    sponsor = data.sponsor
+                    sponsor = data.sponsor,
                 )
             )
+            // Add limit to redirection
+            if (data.limit > 0) {
+                redirectionLimitService.addLimit(id, data.limit)
+            }
             shortUrlRepository.save(su)
         } else {
             throw InvalidUrlException(url)
