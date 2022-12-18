@@ -4,6 +4,7 @@ import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -64,8 +65,11 @@ class UrlShortenerControllerImpl(
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val securityService: SecurityService,
-    val securityQueue: BlockingQueue<String>
 ) : UrlShortenerController {
+
+    @Autowired
+    private val validationQueue : BlockingQueue<String> ?= null
+
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
         redirectUseCase.redirectTo(id).let {
@@ -101,7 +105,7 @@ class UrlShortenerControllerImpl(
 
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
-            securityQueue.put(data.url)
+            validationQueue?.put(data.url)
 
             val response = ShortUrlDataOut(
                 url = url

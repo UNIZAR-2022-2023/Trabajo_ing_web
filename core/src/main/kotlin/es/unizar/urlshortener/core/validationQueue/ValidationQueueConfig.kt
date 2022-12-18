@@ -10,7 +10,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.LinkedBlockingQueue
 
 /**
- * [SecurityQueueConfig] is the configuration for the queue where the incoming URLs are going to be sent
+ * [ValidationQueueConfig] is the configuration for the queue where the incoming URLs are going to be sent
  * for their validation against the Google Safe Browsing API.
  * More info about blocking queue in https://www.baeldung.com/spring-async
  */
@@ -18,8 +18,10 @@ import java.util.concurrent.LinkedBlockingQueue
 @Configuration
 @EnableAsync
 @EnableScheduling
-// open is for disable an error
-open class SecurityQueueConfig {
+open class ValidationQueueConfig {
+
+    @Bean("queue")
+    open fun queue(): BlockingQueue<String> = LinkedBlockingQueue()
 
     @Bean("executorConfig")
     open fun executor(): Executor {
