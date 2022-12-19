@@ -1,5 +1,10 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
+import es.unizar.urlshortener.core.*
+import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
+import es.unizar.urlshortener.core.usecases.LogClickUseCase
+import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import org.springframework.beans.factory.annotation.Autowired
 import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.InvalidUrlException
 import es.unizar.urlshortener.core.NotValidated
@@ -40,7 +45,6 @@ interface UrlShortenerController {
      * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
-
 }
 
 /**
@@ -70,9 +74,11 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
-    val securityUseCase: SecurityUseCase,
-    private val queue: BlockingQueue<String>
+    val securityService: SecurityService,
 ) : UrlShortenerController {
+
+    @Autowired
+    private val validationQueue : BlockingQueue<String> ?= null
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<String> =
@@ -80,17 +86,17 @@ class UrlShortenerControllerImpl(
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
             val h = HttpHeaders()
 
-            if (securityUseCase.isValidated(id)) {
+            if (securityService.isValidated(id)) {
                 // URL has been validated
-                if (securityUseCase.isSecureHash(id)) {
+                if (securityService.isSecureHash(id)) {
                     // URL is safe
                     h.location = URI.create(it.target)
-                    ResponseEntity<String>(h, HttpStatus.valueOf(it.mode))
+                    ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
                 } else {
-                    ResponseEntity<String>(h, HttpStatus.FORBIDDEN)
+                    throw NotSafeUrl(id)
                 }
             } else {
-                throw NotValidated(id)
+                throw NotValidatedUrl(id)
             }
         }
 
@@ -110,7 +116,7 @@ class UrlShortenerControllerImpl(
 
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
-            queue.put(data.url)
+            validationQueue?.put(data.url)
 
             val response = ShortUrlDataOut(
                 url = url

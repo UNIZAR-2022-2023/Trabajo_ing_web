@@ -39,7 +39,7 @@ data class ShortUrlProperties(
     var safe: String = "not validated",
     val owner: String? = null,
     val country: String? = null,
-    val limit: Int=0
+    val limit: Int = 0
 )
 
 /**

@@ -33,7 +33,8 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [NotValidatedUrl::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected fun notValidatedUrls(ex: NotValidatedUrl) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
-    @ResponseBody
+
+  @ResponseBody
     @ExceptionHandler(value = [TooManyRedirections::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected fun TooManyRedirections(ex: TooManyRedirections) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)

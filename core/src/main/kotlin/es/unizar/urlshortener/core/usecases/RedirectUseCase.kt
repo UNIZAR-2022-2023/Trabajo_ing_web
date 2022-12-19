@@ -35,7 +35,7 @@ class RedirectUseCaseImpl(
                 }
             } else {
                 // no validated
-                throw NotValidated(key)
+                throw NotValidatedUrl(key)
             }
         }
         return redirection

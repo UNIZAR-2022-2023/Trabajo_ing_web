@@ -5,6 +5,8 @@ import es.unizar.urlshortener.core.security.Queue
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import es.unizar.urlshortener.core.usecases.SecurityUseCase
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
@@ -45,7 +47,7 @@ class UrlShortenerControllerTest {
     private lateinit var createShortUrlUseCase: CreateShortUrlUseCase
 
     @MockBean
-    private lateinit var securityUseCase: SecurityUseCase
+    private lateinit var securityService: SecurityService
 
     /**
      * Test de GET /{id}
@@ -53,9 +55,10 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns a redirect when the key exists and is secure`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
-        given(securityUseCase.isValidated("key")).willReturn(true)
-        given(securityUseCase.isSecureHash("key")).willReturn(true)
 
+        given(securityService.isValidated("key")).willReturn(true)
+        given(securityService.isSecureHash("key")).willReturn(true)
+        
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
@@ -78,8 +81,8 @@ class UrlShortenerControllerTest {
 
     @Test
     fun `redirectTo returns forbidden when the key exists but is not secure`() {
-        given(securityUseCase.isValidated("key")).willReturn(true)
-        given(securityUseCase.isSecureHash("key")).willReturn(false)
+        given(redirectUseCase.redirectTo("key"))
+            .willAnswer { throw NotSafeUrl("key") }
 
         mockMvc.perform(get("/{id}", "key"))
             .andDo(print())
@@ -91,14 +94,13 @@ class UrlShortenerControllerTest {
 
     @Test
     fun `redirectTo returns bad request when the key exists but is not validated`() {
-        given(securityUseCase.isValidated("key")).willReturn(false)
-
+        given(redirectUseCase.redirectTo("key"))
+            .willAnswer { throw NotValidatedUrl("key") }
+            
         mockMvc.perform(get("/{id}", "key"))
             .andDo(print())
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
-            .andExpect(content().json("{ \"error\": \"URI de destino no validada todavia\" }"))
-
         verify(logClickUseCase, never()).logClick("key", ClickProperties(ip = "127.0.0.1"))
     }
 
@@ -169,5 +171,14 @@ class UrlShortenerControllerTest {
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
+    }
+
+    /**
+     * Test the requests against the Google Safe Browsing
+     */
+    @Test
+    fun `Safe browsing works propertly`() {
+        assertEquals(true, securityService.isSecureUrl("http://example.com/"))
+        assertEquals(false, securityService.isSecureUrl("http://google-analysis.info"))
     }
 }
