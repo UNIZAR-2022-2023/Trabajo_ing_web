@@ -1,13 +1,11 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
-import es.unizar.urlshortener.core.security.Queue
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
-import es.unizar.urlshortener.core.usecases.SecurityUseCase
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
@@ -28,7 +26,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 @WebMvcTest
 @ContextConfiguration(
     classes = [
-        Queue::class,
         UrlShortenerControllerImpl::class,
         RestResponseEntityExceptionHandler::class]
 )
@@ -108,27 +105,11 @@ class UrlShortenerControllerTest {
     fun `redirectTo returns a bad request when the key exists and the website is unreachable`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/health"))
         given(
-            SecurityUseCase.isReachable("http://example.com/health")
-        ).willAnswer { throw WebUnreachable("http://example.com/healt") }
+            securityService.isReachable("http://example.com/health")
+        ).willAnswer { throw NotReachable("http://example.com/healt") }
 
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isBadRequest)
-    }
-
-    @Test
-    fun `creates returns bad request if it cant reach the website`() {
-        given(
-            SecurityUseCase.isReachable("http://example.com/health")
-        ).willAnswer { throw WebUnreachable("http://example.com/healt") }
-
-        mockMvc.perform(
-            post("/api/link")
-                .param("url", "http://example.com/health")
-                .param("qr", "false")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-        )
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.statusCode").value(400))
     }
 
     /**
@@ -167,6 +148,22 @@ class UrlShortenerControllerTest {
         mockMvc.perform(
             post("/api/link")
                 .param("url", "ftp://example.com/")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.statusCode").value(400))
+    }
+
+    @Test
+    fun `creates returns bad request if it cant reach the website`() {
+        given(
+            securityService.isReachable("http://example.com/health")
+        ).willAnswer { throw NotReachable("http://example.com/healt") }
+
+        mockMvc.perform(
+            post("/api/link")
+                .param("url", "http://example.com/health")
+                .param("qr", "false")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         )
             .andExpect(status().isBadRequest)

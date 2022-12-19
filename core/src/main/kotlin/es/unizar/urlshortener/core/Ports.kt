@@ -26,7 +26,7 @@ interface ValidatorService {
 }
 
 /**
- * [SecurityUseCase] is the port to the service that validates if an url is safe or not
+ * [SecurityService] is the port to the service that validates if an url is safe or not
  * according the Google Safe Browsing service.
  * **Note**: It is a design decision to create this port. It could be part of the core .
  */
@@ -36,8 +36,9 @@ interface SecurityService {
     fun isValidated(hash: String): Boolean
 
     fun isSecureHash(hash: String): Boolean
-}
 
+    fun isReachable(url: String) : Boolean
+}
 
 /**
  * [HashService] is the port to the service that creates a hash from a URL.

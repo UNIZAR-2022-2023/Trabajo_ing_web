@@ -46,7 +46,8 @@ class SecurityServiceImpl (
 
     private var restTemplate: RestTemplate = RestTemplate()
 
-    private val API_URL = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyCbSLMEHHQWcbQoETUAO30D_9KGmYyZ5iQ"
+    private val API_URL =
+        "https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyCbSLMEHHQWcbQoETUAO30D_9KGmYyZ5iQ"
 
     /**
      * Verifies if a URL is secure according to the Google Safe Browsing Service
@@ -72,10 +73,19 @@ class SecurityServiceImpl (
         return response.length == 3
     }
 
+    override fun isReachable(url: String) : Boolean {
+        return try {
+            val resp = restTemplate.getForEntity(url, String::class.java)
+            resp.statusCode.is2xxSuccessful
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     /**
      * We have a blocking queue that is reading the URLs and checking if they are safe or not.
      * How to see if the URL has been validated or not? Check the column "safe". If it matches
-     * with "not processed", it hasn't been validated yet
+     * with null, it hasn't been validated yet
      */
     override fun isValidated(hash: String): Boolean {
         val shortUrlData = shortUrlRepository.findByHash(hash)!!
@@ -94,7 +104,7 @@ class SecurityServiceImpl (
      * [BodyBuilder] is a helper to build the body for the request to the
      * Google Safe Browsing API.
      */
-    private class BodyBuilder (url: String) : Serializable {
+    private class BodyBuilder(url: String) : Serializable {
 
         val bodyJson: String = """
             {
@@ -116,6 +126,9 @@ class SecurityServiceImpl (
         fun getBody(): String {
             return bodyJson
         }
+    }
+}
+
  /**
  * Implementation of the port [ValidatorService].
  */
