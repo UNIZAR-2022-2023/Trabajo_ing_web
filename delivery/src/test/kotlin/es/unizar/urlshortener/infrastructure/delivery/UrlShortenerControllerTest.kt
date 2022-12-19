@@ -4,7 +4,6 @@ import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
-import es.unizar.urlshortener.core.validationQueue.Queue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -25,7 +24,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 @WebMvcTest
 @ContextConfiguration(
     classes = [
-        Queue::class,
         UrlShortenerControllerImpl::class,
         RestResponseEntityExceptionHandler::class]
 )
@@ -146,9 +144,8 @@ class UrlShortenerControllerTest {
      * Test the requests against the Google Safe Browsing
      */
     @Test
-    @Disabled
     fun `Safe browsing works propertly`() {
-        assertEquals(true, securityService.isSecureUrl("http://example.com/"))
+            assertEquals(true, securityService.isSecureUrl("http://example.com/"))
         assertEquals(false, securityService.isSecureUrl("http://google-analysis.info"))
     }
 }

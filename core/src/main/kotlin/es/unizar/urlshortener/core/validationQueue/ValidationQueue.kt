@@ -21,17 +21,14 @@ open class ValidationQueue (
     private val securityService: SecurityService,
 ) {
     @Autowired
-    private val queue : BlockingQueue<String> ?= null
+    private val validationQueue : BlockingQueue<String> ?= null
 
     @Async("executorConfig")
     @Scheduled(fixedDelay = 200L)
     open fun executor () {
         try {
-            println("COMIENZO")
             // Get the URL from the queue
-            println(queue?.size)
-
-            val url: String = queue!!.take()
+            val url: String = validationQueue!!.take()
             println("Taking a new URL: $url")
 
             // Verify if the URL is safe or not
@@ -47,7 +44,7 @@ open class ValidationQueue (
             shortUrlRepository.save(shortUrlData)
 
         } catch (e: InterruptedException) {
-            println("Waiting for URL...")
+            println(e.message)
         }
     }
 }

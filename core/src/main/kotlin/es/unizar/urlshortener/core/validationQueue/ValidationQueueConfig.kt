@@ -20,7 +20,11 @@ import java.util.concurrent.LinkedBlockingQueue
 @EnableScheduling
 open class ValidationQueueConfig {
 
-    @Bean("queue")
+    /**
+     * Because of the inheritance, all the variables of type BlockingQueue with the
+     * annotation of @Autowired, will be injected
+     */
+    @Bean
     open fun queue(): BlockingQueue<String> = LinkedBlockingQueue()
 
     @Bean("executorConfig")
