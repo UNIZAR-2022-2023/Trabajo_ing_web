@@ -5,6 +5,14 @@ import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import org.springframework.beans.factory.annotation.Autowired
+import es.unizar.urlshortener.core.ClickProperties
+import es.unizar.urlshortener.core.InvalidUrlException
+import es.unizar.urlshortener.core.NotValidated
+import es.unizar.urlshortener.core.ShortUrlProperties
+import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
+import es.unizar.urlshortener.core.usecases.LogClickUseCase
+import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import es.unizar.urlshortener.core.usecases.SecurityUseCase
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -28,10 +36,11 @@ interface UrlShortenerController {
      *
      * **Note**: Delivery of use cases [RedirectUseCase] and [LogClickUseCase].
      */
-    fun redirectTo(id: String, request: HttpServletRequest): ResponseEntity<Void>
+    fun redirectTo(id: String, request: HttpServletRequest): ResponseEntity<String>
 
     /**
-     * Creates a short url from details provided in [data].
+     * Creates a short url
+     * from details provided in [data].
      *
      * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
@@ -43,7 +52,8 @@ interface UrlShortenerController {
  */
 data class ShortUrlDataIn(
     val url: String,
-    val sponsor: String? = null
+    val sponsor: String? = null,
+    val limit: Int? = null
 )
 
 /**
@@ -71,7 +81,7 @@ class UrlShortenerControllerImpl(
     private val validationQueue : BlockingQueue<String> ?= null
 
     @GetMapping("/{id:(?!api|index).*}")
-    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
+    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<String> =
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
             val h = HttpHeaders()
@@ -96,7 +106,8 @@ class UrlShortenerControllerImpl(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
-                sponsor = data.sponsor
+                sponsor = data.sponsor ,
+                limit = data.limit?: 0
             )
         ).let {
             val h = HttpHeaders()

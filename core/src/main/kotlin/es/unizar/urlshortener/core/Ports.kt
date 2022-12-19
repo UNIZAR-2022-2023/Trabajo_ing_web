@@ -47,3 +47,13 @@ interface SecurityService {
 interface HashService {
     fun hasUrl(url: String): String
 }
+
+/**
+ * [RedirectionLimitService] is the port that limit the number of redirection to a url.
+ *
+ * **Note**: It is a design decision to create this port. It could be part of the core .
+ */
+interface RedirectionLimitService {
+    fun addLimit(hash : String, limit : Int)
+    fun proveLimit(hash : String)
+}

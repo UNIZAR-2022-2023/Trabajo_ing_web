@@ -7,6 +7,8 @@ import com.google.common.hash.Hashing
 import es.unizar.urlshortener.core.HashService
 import es.unizar.urlshortener.core.SecurityService
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.RedirectionLimitService
+import es.unizar.urlshortener.core.TooManyRedirections
 import es.unizar.urlshortener.core.ValidatorService
 import org.apache.commons.validator.routines.UrlValidator
 import org.springframework.http.HttpEntity
@@ -114,5 +116,16 @@ class SecurityServiceImpl (
         fun getBody(): String {
             return bodyJson
         }
+ /**
+ * Implementation of the port [ValidatorService].
+ */
+class RedirectionLimitServiceImpl : RedirectionLimitService {
+    override fun addLimit(hash: String, limit: Int) {
+
+    }
+    override fun proveLimit(hash: String) {
+       /* if(){
+            throw TooManyRedirections(hash)
+        }*/
     }
 }

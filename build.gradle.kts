@@ -12,7 +12,7 @@ plugins {
 group = "es.unizar"
 version = "0.2022.1-SNAPSHOT"
 
-var mockitoVersion = "4.0.0"
+var mockitoVersion = "4.1.0"
 var bootstrapVersion = "3.4.0"
 var jqueryVersion = "3.6.1"
 var guavaVersion = "31.1-jre"

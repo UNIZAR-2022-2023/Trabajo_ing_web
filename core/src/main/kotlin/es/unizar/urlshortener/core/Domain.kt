@@ -36,9 +36,10 @@ data class Redirection(
 data class ShortUrlProperties(
     val ip: String? = null,
     val sponsor: String? = null,
-    var safe: String? = null,
+    var safe: String = "not validated",
     val owner: String? = null,
     val country: String? = null,
+    val limit: Int = 0
 )
 
 /**
