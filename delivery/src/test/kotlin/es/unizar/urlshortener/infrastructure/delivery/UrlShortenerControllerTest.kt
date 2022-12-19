@@ -103,32 +103,31 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    fun testUrlReachable() {
-        given(securityUseCase.isReachable("key")).willReturn(true)
+    fun `redirectTo returns a bad request when the key exists and the website is unreachable`() {
+        given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/health"))
+        given(
+            SecurityUseCase.isReachable("http://example.com/health")
+        ).willAnswer { throw WebUnreachable("http://example.com/healt") }
 
         mockMvc.perform(get("/{id}", "key"))
-            .andDo(print())
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.statusCode").value(400))
-            .andExpect(content().json("{ \"error\": \"URI de destino no validada todavia\" }"))
-
-
-        verify(logClickUseCase, never()).logClick("key", ClickProperties(ip = "127.0.0.1"))
     }
 
     @Test
-    fun testUrlNotReachable() {
-        given(securityUseCase.isReachable("url")).willReturn(false)
+    fun `creates returns bad request if it cant reach the website`() {
+        given(
+            SecurityUseCase.isReachable("http://example.com/health")
+        ).willAnswer { throw WebUnreachable("http://example.com/healt") }
 
-        mockMvc.perform(get("/{id}", "key"))
-            .andDo(print())
+        mockMvc.perform(
+            post("/api/link")
+                .param("url", "http://example.com/health")
+                .param("qr", "false")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
-            .andExpect(content().json("{ \"error\": \"URI de destino no validada todavia\" }"))
-
-        verify(logClickUseCase, never()).logClick("key", ClickProperties(ip = "127.0.0.1"))
     }
-
 
     /**
      * Test de POST /api/link
