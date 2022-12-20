@@ -111,7 +111,7 @@ class UrlShortenerControllerImpl(
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
-            qr = URI.create("http://localhost" + url.path + "/qr")
+            val qr = URI.create("http://localhost" + url.path + "/qr")
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
             validationQueue?.put(data.url)

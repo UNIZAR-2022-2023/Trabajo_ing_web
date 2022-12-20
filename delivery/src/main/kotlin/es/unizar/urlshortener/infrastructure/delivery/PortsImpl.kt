@@ -12,7 +12,6 @@ import java.io.Serializable
 import java.lang.management.ThreadInfo
 import java.net.URI
 import java.nio.charset.StandardCharsets
-import org.springframework.http.MediaType.*
 import io.github.g0dkar.qrcode.*
 import org.apache.commons.validator.routines.*
 import org.springframework.core.io.*
