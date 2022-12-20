@@ -97,7 +97,7 @@ class UrlShortenerControllerImpl(
             }
         }
 
-    @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
+    @PostMapping("/api/link", consumes = [APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
         createShortUrlUseCase.create(
             url = data.url,
@@ -113,6 +113,7 @@ class UrlShortenerControllerImpl(
             val qr = URI.create("http://localhost" + url.path + "/qr")
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
+            println("Añadiendo nuevo QR: ${qr}")
             validationQueue?.put(data.url)
 
             val response = ShortUrlDataOut(

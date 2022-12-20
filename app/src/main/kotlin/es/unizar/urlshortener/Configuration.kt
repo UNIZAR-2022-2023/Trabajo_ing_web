@@ -1,17 +1,14 @@
 package es.unizar.urlshortener
 
-import es.unizar.urlshortener.core.RedirectionLimitService
 import es.unizar.urlshortener.core.usecases.*
-import es.unizar.urlshortener.core.QRService
 import es.unizar.urlshortener.infrastructure.delivery.*
-import es.unizar.urlshortener.infrastructure.repositories.*
+import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
+import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
+import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
+import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServiceImpl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.scheduling.annotation.EnableAsync
-import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.stereotype.Component
 
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
@@ -46,6 +43,9 @@ class ApplicationConfiguration(
 
     @Bean
     fun qr() = QRServiceImpl()
+
+    @Bean
+    fun generateQRUseCase() = GenerateQRUseCaseImpl(shortUrlRepositoryService(), qr())
 
     @Bean
     fun createShortUrlUseCase() =
