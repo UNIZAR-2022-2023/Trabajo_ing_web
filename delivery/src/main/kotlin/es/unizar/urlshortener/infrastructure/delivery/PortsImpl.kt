@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.hash.*
 import es.unizar.urlshortener.core.*
+import io.github.g0dkar.qrcode.*
 import org.apache.commons.validator.routines.UrlValidator
 import org.springframework.http.HttpEntity
 import org.springframework.web.client.RestTemplate
@@ -12,7 +13,6 @@ import java.io.Serializable
 import java.lang.management.ThreadInfo
 import java.net.URI
 import java.nio.charset.StandardCharsets
-import io.github.g0dkar.qrcode.*
 import org.apache.commons.validator.routines.*
 import org.springframework.core.io.*
 import org.springframework.util.MimeTypeUtils.*

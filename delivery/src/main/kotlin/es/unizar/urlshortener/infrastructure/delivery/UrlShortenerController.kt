@@ -3,7 +3,6 @@ package es.unizar.urlshortener.infrastructure.delivery
 import es.unizar.urlshortener.core.*
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.concurrent.BlockingQueue
-import GenerateQRUseCase
 import com.google.common.net.HttpHeaders.*
 import es.unizar.urlshortener.core.usecases.*
 import org.springframework.core.io.*

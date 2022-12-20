@@ -2,6 +2,7 @@ package es.unizar.urlshortener
 
 import es.unizar.urlshortener.core.RedirectionLimitService
 import es.unizar.urlshortener.core.usecases.*
+import es.unizar.urlshortener.core.QRService
 import es.unizar.urlshortener.infrastructure.delivery.*
 import es.unizar.urlshortener.infrastructure.repositories.*
 import org.springframework.beans.factory.annotation.Autowired
