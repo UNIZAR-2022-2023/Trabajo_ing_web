@@ -48,11 +48,6 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [QrNotFound::class])
     @ResponseStatus(HttpStatus.NOT_FOUND)
     protected fun QrNotFound(ex: QrNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
-
-    @ResponseBody
-    @ExceptionHandler(value = [UrlNotReachableException::class])
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    protected fun UrlNotReachableException(ex: UrlNotReachableException) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
 }
 
 data class ErrorMessage(

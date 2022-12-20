@@ -13,3 +13,5 @@ class NotSafeId (key: String): Exception("[$key] has an insecure URL")
 class TooManyRedirections (key: String) : Exception(" [$key] has too many redirections")
 
 class NotReachable (url: String) : Exception(" [$url] is not reachable")
+
+class QrNotFound(val hash: String) : Exception("Destination URI [$hash] doesn't exist")

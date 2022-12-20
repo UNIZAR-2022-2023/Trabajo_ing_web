@@ -1,5 +1,7 @@
 package es.unizar.urlshortener.core
 
+import org.springframework.core.io.*
+
 /**
  * [ClickRepositoryService] is the port to the repository that provides persistence to [Clicks][Click].
  */
