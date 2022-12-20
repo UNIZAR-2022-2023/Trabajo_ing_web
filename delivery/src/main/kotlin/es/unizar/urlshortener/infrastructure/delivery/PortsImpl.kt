@@ -4,12 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.hash.*
-import es.unizar.urlshortener.core.HashService
-import es.unizar.urlshortener.core.SecurityService
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
-import es.unizar.urlshortener.core.RedirectionLimitService
-import es.unizar.urlshortener.core.TooManyRedirections
-import es.unizar.urlshortener.core.ValidatorService
+import es.unizar.urlshortener.core.*
 import org.apache.commons.validator.routines.UrlValidator
 import org.springframework.http.HttpEntity
 import org.springframework.web.client.RestTemplate
@@ -17,7 +12,7 @@ import java.io.Serializable
 import java.lang.management.ThreadInfo
 import java.net.URI
 import java.nio.charset.StandardCharsets
-import org.springframework.http.MediaType.IMAGE_PNG_VALUE
+import org.springframework.http.MediaType.*
 import io.github.g0dkar.qrcode.*
 import org.apache.commons.validator.routines.*
 import org.springframework.core.io.*
