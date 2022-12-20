@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import GenerateQRUseCase
+import org.springframework.core.io.*
 
 @WebMvcTest
 @ContextConfiguration(
@@ -45,6 +47,9 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var securityService: SecurityService
+
+    @MockBean
+    private lateinit var generateQRUseCase: GenerateQRUseCase
 
     /**
      * Test de GET /{id}
@@ -178,4 +183,23 @@ class UrlShortenerControllerTest {
         assertEquals(true, securityService.isSecureUrl("http://example.com/"))
         assertEquals(false, securityService.isSecureUrl("http://google-analysis.info"))
     }
+
+
+    @Test
+    fun `qr() returns a qr code when the key exists`() {
+        given(generateQRUseCase.generateQR("key")).willReturn(ByteArrayResource("test".toByteArray()))
+        mockMvc.perform(get("/{hash}/qr", "key"))
+            .andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.IMAGE_PNG))
+            .andExpect(content().bytes("test".toByteArray()))
+    }
+
+    @Test
+    fun `qr() returns a not found when the key does not exist`() {
+        given(generateQRUseCase.generateQR("key")).willAnswer { throw QrNotFound("key") }
+        mockMvc.perform(get("/{hash}/qr", "key"))
+            .andDo(print())
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.statusCode").value(404))
+    } 
 }

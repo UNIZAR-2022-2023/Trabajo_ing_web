@@ -3,7 +3,7 @@ package es.unizar.urlshortener.infrastructure.delivery
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.google.common.hash.Hashing
+import com.google.common.hash.*
 import es.unizar.urlshortener.core.HashService
 import es.unizar.urlshortener.core.SecurityService
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
@@ -17,6 +17,13 @@ import java.io.Serializable
 import java.lang.management.ThreadInfo
 import java.net.URI
 import java.nio.charset.StandardCharsets
+import org.springframework.http.MediaType.IMAGE_PNG_VALUE
+import io.github.g0dkar.qrcode.*
+import org.apache.commons.validator.routines.*
+import org.springframework.core.io.*
+import org.springframework.util.MimeTypeUtils.*
+import java.io.*
+import java.nio.charset.*
 
 /**
  * Implementation of the port [ValidatorService].
@@ -141,4 +148,16 @@ class RedirectionLimitServiceImpl : RedirectionLimitService {
             throw TooManyRedirections(hash)
         }*/
     }
+}
+
+/**
+ * Implementation of the port [QRService].
+ */
+class QRServiceImpl : QRService {
+    override fun qr(url: String): ByteArrayResource =
+        ByteArrayOutputStream().let{
+            QRCode(url).render().writeImage(it)
+            val imageBytes = it.toByteArray()
+            ByteArrayResource(imageBytes, IMAGE_PNG_VALUE)
+        }
 }

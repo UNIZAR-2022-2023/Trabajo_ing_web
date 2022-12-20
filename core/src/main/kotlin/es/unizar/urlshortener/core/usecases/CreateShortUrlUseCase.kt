@@ -19,7 +19,8 @@ class CreateShortUrlUseCaseImpl(
     private val shortUrlRepository: ShortUrlRepositoryService,
     private val validatorService: ValidatorService,
     private val hashService: HashService,
-    private val redirectionLimitService: RedirectionLimitService
+    private val redirectionLimitService: RedirectionLimitService,
+    private val qrService: QRService
 ) : CreateShortUrlUseCase {
     override fun create(url: String, data: ShortUrlProperties): ShortUrl =
         if (validatorService.isValid(url)) {
@@ -38,6 +39,11 @@ class CreateShortUrlUseCaseImpl(
                 redirectionLimitService.addLimit(id, data.limit)
             }
             shortUrlRepository.save(su)
+
+            if( qrService.qr(url) == null ){
+                throw UrlNotReachableException(url)
+            }
+
         } else {
             throw InvalidUrlException(url)
         }

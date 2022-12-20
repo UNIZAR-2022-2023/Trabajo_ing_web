@@ -58,3 +58,12 @@ interface RedirectionLimitService {
     fun addLimit(hash : String, limit : Int)
     fun proveLimit(hash : String)
 }
+
+/**
+ * [QRService] is the port that creates a QR code from a shortened URI.
+ *
+ * **Note**: It is a design decision to create this port. It could be part of the core .
+ */
+interface QRService{
+    fun qr(url: String): ByteArrayResource
+}

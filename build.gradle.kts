@@ -46,6 +46,7 @@ project(":core") {
     dependencies {
         "implementation"("com.fasterxml.jackson.module:jackson-module-kotlin")
         "implementation"("org.springframework.boot:spring-boot-starter-web")
+        "implementation"("io.github.g0dkar:qrcode-kotlin-jvm:3.2.0")
     }
     tasks.getByName<BootJar>("bootJar") {
         enabled = false

@@ -34,7 +34,7 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected fun notValidatedUrls(ex: NotValidatedUrl) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
 
-  @ResponseBody
+    @ResponseBody
     @ExceptionHandler(value = [TooManyRedirections::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected fun TooManyRedirections(ex: TooManyRedirections) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
@@ -43,6 +43,16 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [NotReachable::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected fun notReachable(ex: NotReachable) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
+ 
+    @ResponseBody
+    @ExceptionHandler(value = [QrNotFound::class])
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    protected fun QrNotFound(ex: QrNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
+
+    @ResponseBody
+    @ExceptionHandler(value = [UrlNotReachableException::class])
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    protected fun UrlNotReachableException(ex: UrlNotReachableException) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
 }
 
 data class ErrorMessage(
