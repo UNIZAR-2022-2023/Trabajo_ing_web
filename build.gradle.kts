@@ -79,6 +79,7 @@ project(":delivery") {
 
         "testImplementation"("org.springframework.boot:spring-boot-starter-test")
         "testImplementation"("org.mockito.kotlin:mockito-kotlin:$mockitoVersion")
+        "implementation"("org.springframework.boot:spring-boot-starter-thymeleaf:2.5.3")
     }
     tasks.getByName<BootJar>("bootJar") {
         enabled = false

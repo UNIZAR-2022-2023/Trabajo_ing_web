@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingDeque
 
@@ -16,35 +17,28 @@ import java.util.concurrent.LinkedBlockingDeque
  * More info about blocking queue in https://www.baeldung.com/spring-async
  */
 @Component
-open class ValidationQueue (
-    private val shortUrlRepository: ShortUrlRepositoryService,
-    private val securityService: SecurityService,
+open class CsvQueue (
 ) {
     @Autowired
-    private val validationQueue : BlockingQueue<String> ?= null
+    private val csvQueue : BlockingQueue<MultipartFile> ?= null
 
-    @Async("executorValidation")
-    @Scheduled(fixedDelay = 300L)
+    @Autowired
+    private val validationQueue : BlockingQueue<String>?= null
+
+    @Async("executorCsv")
+    @Scheduled(fixedDelay = 200L)
     open fun executor () {
         try {
-            // Get the URL from the queue
-            val url: String = validationQueue!!.take()
-            println("Taking a new URL: $url")
+            val file: MultipartFile = csvQueue!!.take()
+            println("Taking a new CSV: $file")
 
-            // Verify if the URL is safe or not
-            val isSafe = securityService.isSecureUrl(url)
+            file.inputStream.bufferedReader().forEachLine {
+                validationQueue?.put(it)
+            }
 
-            // Verify if is reachable
-            securityService.isReachable(url)
 
-            // Update the database
-            val shortUrlData = shortUrlRepository.findByUrl(url)!!
-            if (isSafe)
-                shortUrlData.properties.safe = "safe"
-            else
-                shortUrlData.properties.safe = "not safe"
 
-            shortUrlRepository.save(shortUrlData)
+
 
         } catch (e: InterruptedException) {
             println(e.message)
