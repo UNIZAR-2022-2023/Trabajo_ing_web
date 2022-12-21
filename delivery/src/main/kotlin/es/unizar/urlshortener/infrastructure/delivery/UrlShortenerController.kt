@@ -105,6 +105,7 @@ class UrlShortenerControllerImpl(
                 limit = data.limit?: 0
             )
         ).let {
+            print("it.hash: $it.hash")
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url

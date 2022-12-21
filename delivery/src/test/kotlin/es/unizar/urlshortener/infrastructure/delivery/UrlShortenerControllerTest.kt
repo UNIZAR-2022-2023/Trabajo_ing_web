@@ -5,15 +5,12 @@ import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
@@ -115,7 +112,6 @@ class UrlShortenerControllerTest {
     /**
      * Test de POST /api/link
      */
-    
     @Test
     fun `creates returns a basic redirect if it can compute a hash`() {
         given(
@@ -163,7 +159,7 @@ class UrlShortenerControllerTest {
         mockMvc.perform(
             post("/api/link")
                 .param("url", "http://example.com/health")
-                .param("qr", "false")
+                //.param("qr", "false")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         )
             .andExpect(status().isBadRequest)
@@ -174,8 +170,8 @@ class UrlShortenerControllerTest {
      * Test the requests against the Google Safe Browsing
      */
     @Test
-    fun `Safe browsing works propertly`() {
+    fun `safe browsing works properly`() {
         assertEquals(true, securityService.isSecureUrl("http://example.com/"))
-        assertEquals(false, securityService.isSecureUrl("http://google-analysis.info"))
+        assertEquals(false, securityService.isSecureUrl("http://google-analysis.info/"))
     }
 }
