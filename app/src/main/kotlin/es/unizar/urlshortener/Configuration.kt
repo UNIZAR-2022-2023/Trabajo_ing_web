@@ -1,7 +1,7 @@
 package es.unizar.urlshortener
 
-import es.unizar.urlshortener.core.RedirectionLimitService
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
+import es.unizar.urlshortener.core.usecases.CsvUseCaseImpl
 import es.unizar.urlshortener.core.usecases.LogClickUseCaseImpl
 import es.unizar.urlshortener.core.usecases.RedirectUseCaseImpl
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
@@ -14,11 +14,7 @@ import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityReposito
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServiceImpl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.scheduling.annotation.EnableAsync
-import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.stereotype.Component
 
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
@@ -57,4 +53,7 @@ class ApplicationConfiguration(
 
     @Bean
     fun securityServiceImpl() = SecurityServiceImpl(shortUrlRepositoryService())
+
+    @Bean
+    fun csvUseCase() = CsvUseCaseImpl(createShortUrlUseCase())
 }

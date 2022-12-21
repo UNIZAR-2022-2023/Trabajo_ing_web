@@ -3,9 +3,9 @@ package es.unizar.urlshortener.infrastructure.delivery
 import es.unizar.urlshortener.core.*
 import org.springframework.beans.factory.annotation.Autowired
 import es.unizar.urlshortener.core.ClickProperties
-import es.unizar.urlshortener.core.InvalidUrlException
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
+import es.unizar.urlshortener.core.usecases.CsvUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import org.springframework.hateoas.server.mvc.linkTo
@@ -13,10 +13,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.net.URI
 import java.util.concurrent.BlockingQueue
 import javax.servlet.http.HttpServletRequest
@@ -40,6 +38,13 @@ interface UrlShortenerController {
      * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
+
+    /**
+     * Creates a short url from details provided in [file].
+     *
+     * **Note**: Delivery of use case [ShortUrlDataOut].
+     */
+    fun csv(@RequestParam("file") file: MultipartFile, request: HttpServletRequest): ResponseEntity<String>
 }
 
 /**
@@ -70,6 +75,7 @@ class UrlShortenerControllerImpl(
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val securityService: SecurityService,
+    val csvUseCase: CsvUseCase
 ) : UrlShortenerController {
 
     @Autowired
@@ -118,4 +124,31 @@ class UrlShortenerControllerImpl(
             )
             ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
         }
+
+    @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    override fun csv(@RequestParam("file") file: MultipartFile, request: HttpServletRequest): ResponseEntity<String> {
+        val h = HttpHeaders()
+        if(file.isEmpty)  {
+            h.add("Warning", "Empty file")
+            return ResponseEntity<String>(h, HttpStatus.OK)
+        } else {
+            try {
+                val csv = csvUseCase.create(
+                    file = file,
+                    data = ShortUrlProperties(
+                        ip = request.remoteAddr,
+                        sponsor = null
+                    )
+                )
+                h.set("Content-Type", "text/csv")
+                h.set("Content-Disposition", "attachment; filename=shortURLs.csv")
+                h.set("Content-Length", csv.length.toString())
+                return ResponseEntity<String>(csv, h, HttpStatus.CREATED)
+            } catch(e: Exception) {
+                h.add("Error", "Cannot read csv")
+                h.set("Content-Type", "application/json")
+                return ResponseEntity<String>(h, HttpStatus.BAD_REQUEST)
+            }
+        }
+    }
 }
