@@ -4,15 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.hash.Hashing
-import es.unizar.urlshortener.core.HashService
-import es.unizar.urlshortener.core.SecurityService
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
-import es.unizar.urlshortener.core.RedirectionLimitService
-import es.unizar.urlshortener.core.TooManyRedirections
-import es.unizar.urlshortener.core.ValidatorService
+import es.unizar.urlshortener.core.*
+import es.unizar.urlshortener.core.ReachableService
+import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import org.apache.commons.validator.routines.UrlValidator
 import org.springframework.http.HttpEntity
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.multipart.MultipartFile
 import java.io.Serializable
 import java.lang.management.ThreadInfo
 import java.net.URI
@@ -35,6 +33,32 @@ class ValidatorServiceImpl : ValidatorService {
 @Suppress("UnstableApiUsage")
 class HashServiceImpl : HashService {
     override fun hasUrl(url: String) = Hashing.murmur3_32_fixed().hashString(url, StandardCharsets.UTF_8).toString()
+}
+
+class ReachableServiceImpl (
+    private val shortUrlRepository: ShortUrlRepositoryService
+) : ReachableService {
+
+    private var restTemplate: RestTemplate = RestTemplate()
+
+    override fun isReachableUrl(url: String) : Boolean {
+        return try {
+            val resp = restTemplate.getForEntity(url, String::class.java)
+            resp.statusCode.is2xxSuccessful
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
+    /**
+     * We have a blocking queue that is reading the URLs and checking if they are safe or not.
+     * How to see if the URL has been validated or not? Check the column "safe". If it matches
+     * with null, it hasn't been validated yet
+     */
+    override fun isValidated(hash: String): Boolean {
+        val shortUrlData = shortUrlRepository.findByHash(hash)!!
+        return shortUrlData.properties.reachable != null
+    }
 }
 
 /**
@@ -73,15 +97,6 @@ class SecurityServiceImpl (
         return response.length == 3
     }
 
-    override fun isReachable(url: String) : Boolean {
-        return try {
-            val resp = restTemplate.getForEntity(url, String::class.java)
-            resp.statusCode.is2xxSuccessful
-        } catch (e: Exception) {
-            false
-        }
-    }
-
     /**
      * We have a blocking queue that is reading the URLs and checking if they are safe or not.
      * How to see if the URL has been validated or not? Check the column "safe". If it matches
@@ -95,9 +110,9 @@ class SecurityServiceImpl (
     /**
      * Returns true only if the URL associated to the hash is secure
      */
-    override fun isSecureHash(hash: String): Boolean {
+    override fun isSecureHash(hash: String): Boolean? {
         val shortUrlData = shortUrlRepository.findByHash(hash)!!
-        return shortUrlData.properties.safe == "safe"
+        return shortUrlData.properties.safe
     }
 
     /**
@@ -140,5 +155,30 @@ class RedirectionLimitServiceImpl : RedirectionLimitService {
        /* if(){
             throw TooManyRedirections(hash)
         }*/
+    }
+}
+
+/**
+ * Implementation of [CsvService]
+ */
+class CsvServiceImpl (
+    private val createShortUrlUseCase: CreateShortUrlUseCase
+) : CsvService {
+    override fun create(file: MultipartFile, data: ShortUrlProperties): String {
+        var csv = String()
+
+        file.inputStream.bufferedReader().forEachLine {
+            csv += it
+            try{
+                val shortUrl = createShortUrlUseCase.create(
+                    url = it,
+                    data = data
+                )
+                csv += ",http://localhost:8080/${shortUrl.hash}\n"
+            }catch (e: Exception) {
+                csv += ",fallo,,Invalid URL\n"
+            }
+        }
+        return csv
     }
 }

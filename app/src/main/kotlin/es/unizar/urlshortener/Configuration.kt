@@ -1,24 +1,18 @@
 package es.unizar.urlshortener
 
-import es.unizar.urlshortener.core.RedirectionLimitService
+import es.unizar.urlshortener.core.ReachableService
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
 import es.unizar.urlshortener.core.usecases.LogClickUseCaseImpl
 import es.unizar.urlshortener.core.usecases.RedirectUseCaseImpl
-import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
-import es.unizar.urlshortener.infrastructure.delivery.RedirectionLimitServiceImpl
-import es.unizar.urlshortener.infrastructure.delivery.SecurityServiceImpl
-import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
+import es.unizar.urlshortener.infrastructure.delivery.*
 import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServiceImpl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.scheduling.annotation.EnableAsync
-import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.stereotype.Component
+import es.unizar.urlshortener.infrastructure.delivery.ReachableServiceImpl
 
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
@@ -56,5 +50,11 @@ class ApplicationConfiguration(
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService(), hashService(), redirectionLimitService())
 
     @Bean
+    fun reachableService() = ReachableServiceImpl(shortUrlRepositoryService())
+
+    @Bean
     fun securityServiceImpl() = SecurityServiceImpl(shortUrlRepositoryService())
+
+    @Bean
+    fun csvServiceImpl() = CsvServiceImpl(createShortUrlUseCase())
 }

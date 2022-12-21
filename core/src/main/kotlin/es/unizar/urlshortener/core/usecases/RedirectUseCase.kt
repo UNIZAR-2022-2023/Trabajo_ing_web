@@ -28,14 +28,14 @@ class RedirectUseCaseImpl(
         redirectionLimitService.proveLimit(key)
         val urlShort = shortUrlRepository.findByHash(key)
         if (urlShort != null) {
-            if (urlShort.properties.safe != null) {
+            if (urlShort.properties.reachable != null && urlShort.properties.safe != null) {
                 //is checked
-                if (urlShort.properties.safe == "true") {
-                    throw NotSafeId(key)
+                if (urlShort.properties.safe!!) {
+                    throw NotSafe(key)
                 }
             } else {
                 // no validated
-                throw NotValidatedUrl(key)
+                throw NotValidated(key)
             }
         }
         return redirection
