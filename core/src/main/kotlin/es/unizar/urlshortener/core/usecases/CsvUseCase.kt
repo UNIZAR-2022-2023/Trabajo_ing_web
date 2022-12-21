@@ -32,7 +32,6 @@ class CsvUseCaseImpl( private val createShortUrlUseCase: CreateShortUrlUseCase
                 url = it,
                 data = data
             )
-            //validationQueue?.put(it)
 
             csv += ",http://localhost:8080/${shortUrl.hash}\n"
         }
