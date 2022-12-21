@@ -81,6 +81,9 @@ class UrlShortenerControllerImpl(
     @Autowired
     private val validationQueue : BlockingQueue<String> ?= null
 
+    @Autowired
+    private val csvQueue: BlockingQueue<MultipartFile> ?= null
+
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
         redirectUseCase.redirectTo(id).let {
@@ -133,6 +136,8 @@ class UrlShortenerControllerImpl(
             return ResponseEntity<String>(h, HttpStatus.OK)
         } else {
             try {
+                csvQueue?.put(file)
+
                 val csv = csvUseCase.create(
                     file = file,
                     data = ShortUrlProperties(
@@ -140,6 +145,9 @@ class UrlShortenerControllerImpl(
                         sponsor = null
                     )
                 )
+
+
+
                 h.set("Content-Type", "text/csv")
                 h.set("Content-Disposition", "attachment; filename=shortURLs.csv")
                 h.set("Content-Length", csv.length.toString())
