@@ -23,10 +23,8 @@ open class ValidationQueue (
     @Autowired
     private val validationQueue : BlockingQueue<String> ?= null
 
-
-
     @Async("executorValidation")
-    @Scheduled(fixedDelay = 200L)
+    @Scheduled(fixedDelay = 300L)
     open fun executor () {
         try {
             // Get the URL from the queue
@@ -35,6 +33,9 @@ open class ValidationQueue (
 
             // Verify if the URL is safe or not
             val isSafe = securityService.isSecureUrl(url)
+
+            // Verify if is reachable
+            securityService.isReachable(url)
 
             // Update the database
             val shortUrlData = shortUrlRepository.findByUrl(url)!!

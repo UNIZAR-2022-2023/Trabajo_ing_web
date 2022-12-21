@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
-import es.unizar.urlshortener.core.usecases.CsvUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import org.springframework.hateoas.server.mvc.linkTo
@@ -75,7 +74,7 @@ class UrlShortenerControllerImpl(
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val securityService: SecurityService,
-    val csvUseCase: CsvUseCase
+    val csvService: CsvService
 ) : UrlShortenerController {
 
     @Autowired
@@ -136,9 +135,11 @@ class UrlShortenerControllerImpl(
             return ResponseEntity<String>(h, HttpStatus.OK)
         } else {
             try {
+                // Send the CSV to the CSV queue
+                println("Añadiendo nuevo CSV: ${file.name}")
                 csvQueue?.put(file)
 
-                val csv = csvUseCase.create(
+                val csv = csvService.create(
                     file = file,
                     data = ShortUrlProperties(
                         ip = request.remoteAddr,
@@ -146,12 +147,11 @@ class UrlShortenerControllerImpl(
                     )
                 )
 
-
-
                 h.set("Content-Type", "text/csv")
                 h.set("Content-Disposition", "attachment; filename=shortURLs.csv")
                 h.set("Content-Length", csv.length.toString())
                 return ResponseEntity<String>(csv, h, HttpStatus.CREATED)
+
             } catch(e: Exception) {
                 h.add("Error", "Cannot read csv")
                 h.set("Content-Type", "application/json")

@@ -4,15 +4,12 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.hash.Hashing
-import es.unizar.urlshortener.core.HashService
-import es.unizar.urlshortener.core.SecurityService
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
-import es.unizar.urlshortener.core.RedirectionLimitService
-import es.unizar.urlshortener.core.TooManyRedirections
-import es.unizar.urlshortener.core.ValidatorService
+import es.unizar.urlshortener.core.*
+import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import org.apache.commons.validator.routines.UrlValidator
 import org.springframework.http.HttpEntity
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.multipart.MultipartFile
 import java.io.Serializable
 import java.lang.management.ThreadInfo
 import java.net.URI
@@ -78,7 +75,8 @@ class SecurityServiceImpl (
             val resp = restTemplate.getForEntity(url, String::class.java)
             resp.statusCode.is2xxSuccessful
         } catch (e: Exception) {
-            false
+            throw NotReachable(url)
+
         }
     }
 
@@ -140,5 +138,30 @@ class RedirectionLimitServiceImpl : RedirectionLimitService {
        /* if(){
             throw TooManyRedirections(hash)
         }*/
+    }
+}
+
+/**
+ * Implementation of [CsvService]
+ */
+class CsvServiceImpl (
+    private val createShortUrlUseCase: CreateShortUrlUseCase
+) : CsvService {
+    override fun create(file: MultipartFile, data: ShortUrlProperties): String {
+        var csv = String()
+
+        file.inputStream.bufferedReader().forEachLine {
+            csv += it
+            try{
+                val shortUrl = createShortUrlUseCase.create(
+                    url = it,
+                    data = data
+                )
+                csv += ",http://localhost:8080/${shortUrl.hash}\n"
+            }catch (e: Exception) {
+                csv += ",fallo,,Invalid URL\n"
+            }
+        }
+        return csv
     }
 }

@@ -1,13 +1,9 @@
 package es.unizar.urlshortener
 
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
-import es.unizar.urlshortener.core.usecases.CsvUseCaseImpl
 import es.unizar.urlshortener.core.usecases.LogClickUseCaseImpl
 import es.unizar.urlshortener.core.usecases.RedirectUseCaseImpl
-import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
-import es.unizar.urlshortener.infrastructure.delivery.RedirectionLimitServiceImpl
-import es.unizar.urlshortener.infrastructure.delivery.SecurityServiceImpl
-import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
+import es.unizar.urlshortener.infrastructure.delivery.*
 import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
@@ -55,5 +51,5 @@ class ApplicationConfiguration(
     fun securityServiceImpl() = SecurityServiceImpl(shortUrlRepositoryService())
 
     @Bean
-    fun csvUseCase() = CsvUseCaseImpl(createShortUrlUseCase())
+    fun csvServiceImpl() = CsvServiceImpl(createShortUrlUseCase())
 }
