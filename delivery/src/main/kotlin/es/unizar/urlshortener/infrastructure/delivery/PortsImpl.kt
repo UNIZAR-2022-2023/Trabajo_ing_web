@@ -151,7 +151,6 @@ class QRServiceImpl : QRService {
     override fun qr(url: String): ByteArrayResource =
         ByteArrayOutputStream().let{
             QRCode(url).render().writeImage(it)
-            val imageBytes = it.toByteArray()
-            ByteArrayResource(imageBytes, IMAGE_PNG_VALUE)
+            ByteArrayResource(it.toByteArray(), IMAGE_PNG_VALUE)
         }
 }

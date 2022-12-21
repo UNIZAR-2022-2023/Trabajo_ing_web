@@ -12,7 +12,7 @@ class GenerateQRUseCaseImpl(
     private val qrService: QRService
 ) : GenerateQRUseCase {
     override fun generateQR(hash: String) : ByteArrayResource =
-        shortUrlRepository.findByUrl(hash)?.let {
+        shortUrlRepository.findByHash(hash)?.let {
             qrService.qr(hash)
         } ?: throw QrNotFound(hash)
 }

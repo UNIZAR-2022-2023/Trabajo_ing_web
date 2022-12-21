@@ -38,9 +38,6 @@ class CreateShortUrlUseCaseImpl(
             if (data.limit > 0) {
                 redirectionLimitService.addLimit(id, data.limit)
             }
-            else if (qrService.qr(url) == null){
-                throw NotReachable(url)
-            }
 
             shortUrlRepository.save(su)
 

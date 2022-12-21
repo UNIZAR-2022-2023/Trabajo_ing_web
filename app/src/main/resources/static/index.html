@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,8 +9,6 @@
     <script src="webjars/jquery/3.6.1/jquery.min.js" type="text/javascript"></script>
     <script src="webjars/bootstrap/3.4.0/js/bootstrap.min.js"
             type="text/javascript"></script>
-    <script src="js/app.js" type="text/javascript">
-    </script>
 </head>
 <body>
 <div class="container-full">
@@ -18,24 +17,42 @@
             <h1>URL Shortener</h1>
             <p class="lead">A front-end example page for the project</p>
             <br>
-            <form action="" class="col-lg-12" id="shortener" role="form">
-                <div class="input-group input-group-lg col-sm-offset-4 col-sm-4">
-                    <input class="center-block form-control input-lg" name="url"
-                           placeholder="Enter a URL" title="Enter a URL" type="text">
-                    <span class="input-group-btn"><button
-                            class="btn btn-lg btn-primary" type="submit">Short me!</button></span>
+
+            <form action="" id="shortener" role="form">
+                <div class="form-row align-items-center">
+                    <div class="col-auto">
+                        <input class="form-control mb-2" name="url" id="inlineFormInput"
+                               placeholder="Enter a URL" title="Enter a URL" type="text">
+                    </div>
+                    <div class="col-auto">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" name="wantQr" id="autoSizingCheck"
+                                   type="checkbox">
+                            <label class="form-check-label" for="autoSizingCheck">
+                                Generate QR
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary mb-2" type="submit">Short me!</button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
+
     <div class="row">
         <div class="col-lg-12 text-center">
             <div class="col-sm-offset-4 col-sm-4 text-center">
                 <br/>
-                <div id="result"></div>
+                <div id="result">
+                    <img src="" id="wantQr"/>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="js/app.js" type="text/javascript"/></script>
 </body>
 </html>

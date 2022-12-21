@@ -48,7 +48,8 @@ interface UrlShortenerController {
 data class ShortUrlDataIn(
     val url: String,
     val sponsor: String? = null,
-    val limit: Int? = null
+    val limit: Int? = null,
+    val wantQr: Boolean
 )
 
 /**
@@ -99,7 +100,7 @@ class UrlShortenerControllerImpl(
 
     @PostMapping("/api/link", consumes = [APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
-        createShortUrlUseCase.create(
+            createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
@@ -110,10 +111,12 @@ class UrlShortenerControllerImpl(
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
-            val qr = URI.create("http://localhost" + url.path + "/qr")
+            var qr: URI? = null
+            if (data.wantQr) { qr = URI.create("http://localhost:8080" + url.path + "/qr") }
+            println("${data.wantQr}")
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
-            println("Añadiendo nuevo QR: ${qr}")
+            println("Añadiendo nuevo QR: $qr")
             validationQueue?.put(data.url)
 
             val response = ShortUrlDataOut(
@@ -126,7 +129,7 @@ class UrlShortenerControllerImpl(
     override fun generateQR(@PathVariable hash: String, request: HttpServletRequest) : ResponseEntity<ByteArrayResource> =
         generateQRUseCase.generateQR(hash).let {
             val h = HttpHeaders()
-            h.set(CONTENT_TYPE, IMAGE_PNG.toString())
+            h.set(CONTENT_TYPE, IMAGE_PNG_VALUE)
             ResponseEntity<ByteArrayResource>(it, h, HttpStatus.OK)
         }
 }
