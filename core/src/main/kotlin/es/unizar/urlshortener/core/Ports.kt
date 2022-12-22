@@ -27,7 +27,14 @@ interface ValidatorService {
     fun isValid(url: String): Boolean
 }
 
+/**
+ * [ReachableService] is the port to the service that validates if an url can be reachable.
+ *
+ * **Note**: It is a design decision to create this port. It could be part of the core .
+ */
+
 interface ReachableService {
+
     fun isReachableUrl(url: String): Boolean
 
     fun isValidated(hash: String): Boolean
@@ -39,7 +46,6 @@ interface ReachableService {
  * **Note**: It is a design decision to create this port. It could be part of the core .
  */
 interface SecurityService {
-    fun isSecureHash(hash: String): Boolean?
 
     fun isSecureUrl(url: String): Boolean
 

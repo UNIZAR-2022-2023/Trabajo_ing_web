@@ -26,19 +26,17 @@ open class CsvQueue (
     private val validationQueue : BlockingQueue<String>?= null
 
     @Async("executorCsv")
-    @Scheduled(fixedDelay = 200L)
+    @Scheduled(fixedDelay = 300L)
     open fun executor () {
         try {
             val file: MultipartFile = csvQueue!!.take()
-            println("Taking a new CSV: $file")
+            println("Taking new CSV from the CSV queue: ${file.originalFilename}")
 
             file.inputStream.bufferedReader().forEachLine {
+                // Send the URL to the validation queue
+                println("Adding new URL to the validation queue: $it")
                 validationQueue?.put(it)
             }
-
-
-
-
 
         } catch (e: InterruptedException) {
             println(e.message)

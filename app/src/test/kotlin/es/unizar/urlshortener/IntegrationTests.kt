@@ -34,10 +34,10 @@ class HttpRequestTest {
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
-
+/*
     @MockBean
     private lateinit var securityService: SecurityService
-
+*/
     @BeforeEach
     fun setup() {
         val httpClient = HttpClientBuilder.create()
@@ -53,7 +53,7 @@ class HttpRequestTest {
         JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
     }
 
-    // TODO: Disabled because we've changed the html main page
+    // TODO: Disabled because we've changed the HTML main page
     @Disabled
     @Test
     fun `main page works`() {

@@ -36,8 +36,8 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ResponseBody
     @ExceptionHandler(value = [TooManyRedirections::class])
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    protected fun TooManyRedirections(ex: TooManyRedirections) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    protected fun TooManyRedirections(ex: TooManyRedirections) = ErrorMessage(HttpStatus.TOO_MANY_REQUESTS.value(), ex.message)
 
     @ResponseBody
     @ExceptionHandler(value = [NotReachable::class])

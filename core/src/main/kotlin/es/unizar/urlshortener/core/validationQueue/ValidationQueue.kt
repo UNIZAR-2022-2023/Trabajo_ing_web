@@ -31,18 +31,18 @@ open class ValidationQueue (
         try {
             // Get the URL from the queue
             val url: String = validationQueue!!.take()
-            println("Taking a new URL: $url")
+            println("Taking new URL from the validation queue: $url")
 
             // Verify if the URL is safe or not
             val isSafe = securityService.isSecureUrl(url)
 
             // Verify if is reachable
-            val isRechable = reachableService.isReachableUrl(url)
+            val isReachable = reachableService.isReachableUrl(url)
 
             // Update the database
             val shortUrlData = shortUrlRepository.findByUrl(url)!!
             shortUrlData.properties.safe = isSafe
-            shortUrlData.properties.reachable = isRechable
+            shortUrlData.properties.reachable = isReachable
 
             shortUrlRepository.save(shortUrlData)
 

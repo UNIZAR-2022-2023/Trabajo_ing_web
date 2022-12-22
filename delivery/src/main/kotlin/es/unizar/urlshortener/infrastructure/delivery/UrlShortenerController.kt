@@ -95,7 +95,7 @@ class UrlShortenerControllerImpl(
                 if (!reachableService.isReachableUrl(it.target)) {
                     throw NotReachable(it.target)
                 }
-                else if (!securityService.isSecureHash(id)!!) {
+                else if (!securityService.isSecureUrl(it.target)) {
                     throw NotSafe(it.target)
                 } else {
                     // URL is reachable and safe
@@ -117,13 +117,12 @@ class UrlShortenerControllerImpl(
                 limit = data.limit?: 0
             )
         ).let {
-            print("it.hash: $it.hash")
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
 
             // Send the URL to the validation queue
-            println("Añadiendo nueva URL: ${data.url}")
+            println("Adding new URL to the validation queue: ${data.url}")
             validationQueue?.put(data.url)
 
             val response = ShortUrlDataOut(
@@ -141,7 +140,7 @@ class UrlShortenerControllerImpl(
         } else {
             try {
                 // Send the CSV to the CSV queue
-                println("Añadiendo nuevo CSV: ${file.name}")
+                println("Adding new CSV to the CSV queue: ${file.originalFilename}")
                 csvQueue?.put(file)
 
                 val csv = csvService.create(

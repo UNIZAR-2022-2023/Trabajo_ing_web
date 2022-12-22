@@ -30,7 +30,7 @@ class RedirectUseCaseImpl(
         if (urlShort != null) {
             if (urlShort.properties.reachable != null && urlShort.properties.safe != null) {
                 //is checked
-                if (urlShort.properties.safe!!) {
+                if (!urlShort.properties.safe!!) {
                     throw NotSafe(key)
                 }
             } else {
