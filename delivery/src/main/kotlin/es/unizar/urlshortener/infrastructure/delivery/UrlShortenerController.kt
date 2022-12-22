@@ -57,8 +57,7 @@ data class ShortUrlDataIn(
  */
 data class ShortUrlDataOut(
     val url: URI? = null,
-    val qr: URI? = null,
-    val properties: Map<String, Any> = emptyMap()
+    val qr: URI? = null
 )
 
 /**
@@ -113,7 +112,6 @@ class UrlShortenerControllerImpl(
             h.location = url
             var qr: URI? = null
             if (data.wantQr) { qr = URI.create("http://localhost:8080" + url.path + "/qr") }
-            println("${data.wantQr}")
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
             println("Añadiendo nuevo QR: $qr")
