@@ -4,7 +4,6 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins {
     id("org.springframework.boot") version "2.7.3" apply false
     id("io.spring.dependency-management") version "1.0.13.RELEASE" apply false
-    id("io.gitlab.arturbosch.detekt") version("1.22.0-RC1")
     kotlin("jvm") version "1.7.10" apply false
     kotlin("plugin.spring") version "1.7.10" apply false
     kotlin("plugin.jpa") version "1.7.10" apply false
@@ -74,10 +73,14 @@ project(":delivery") {
         "implementation"(project(":core"))
         "implementation"("org.springframework.boot:spring-boot-starter-web")
         "implementation"("org.springframework.boot:spring-boot-starter-hateoas")
+        "implementation"("org.springframework.boot:spring-boot-starter-cache")
         "implementation"("com.fasterxml.jackson.module:jackson-module-kotlin")
         "implementation"("commons-validator:commons-validator:$commonsValidatorVersion")
         "implementation"("com.google.guava:guava:$guavaVersion")
+        "implementation"("io.github.g0dkar:qrcode-kotlin-jvm:3.2.0")
+        "implementation"("org.jfree:org.jfree.svg:5.0.3")
         "implementation"("com.bucket4j:bucket4j-core:8.1.1")
+        "implementation"("org.springframework.boot:spring-boot-starter-rsocket")
 
         "testImplementation"("org.springframework.boot:spring-boot-starter-test")
         "testImplementation"("org.mockito.kotlin:mockito-kotlin:$mockitoVersion")

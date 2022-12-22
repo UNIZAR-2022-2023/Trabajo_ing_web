@@ -1,8 +1,5 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.hash.Hashing
 import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.ReachableService
@@ -12,13 +9,13 @@ import org.springframework.http.HttpEntity
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.multipart.MultipartFile
 import java.io.Serializable
-import java.lang.management.ThreadInfo
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Refill
+import io.github.bucket4j.Bucket
 
 /**
  * Implementation of the port [ValidatorService].
@@ -149,15 +146,15 @@ class RedirectionLimitServiceImpl : RedirectionLimitService {
      private val buckets : ConcurrentHashMap<String, Bucket> = ConcurrentHashMap()
      override fun addLimit(hash: String, limit: Int) {
 
-         val limit  = Bandwidth.classic(
+         val limited  = Bandwidth.classic(
              limit.toLong(), Refill.intervally(limit.toLong(), Duration.ofMinutes(60)))
-         buckets[hash] = Bucket.builder().addLimit(limit ).build();
+         buckets[hash] = Bucket.builder().addLimit(limited).build();
      }
 
      override fun proveLimit(hash: String) {
          if (buckets[hash] != null) {
-             val prove = buckets[hash].tryConsumeAndReturnRemaining(1)
-             if ( !prove.isConsumed ) {
+             val prove = buckets[hash]?.tryConsumeAndReturnRemaining(1)
+             if (!prove?.isConsumed!!) {
                  throw TooManyRedirections(hash)
              }
          }

@@ -113,8 +113,8 @@ class UrlShortenerControllerImpl(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
-                sponsor = data.sponsor ,
-                limit = data.limit?: 0
+                sponsor = data.sponsor,
+                limit = data.limit ?: 0
             )
         ).let {
             val h = HttpHeaders()

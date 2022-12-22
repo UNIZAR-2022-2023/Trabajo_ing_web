@@ -119,6 +119,26 @@ class UrlShortenerControllerTest {
             .andExpect(status().isBadRequest)
     }
 
+    @Disabled
+    @Test
+    fun `redirectTo returns a too many redirections when limit is reach`() {
+        given(reachableService.isValidated("key")).willReturn(true)
+        given(reachableService.isReachableUrl("http://example.com/")).willReturn(true)
+        given(securityService.isValidated("key")).willReturn(true)
+        given(securityService.isSecureUrl("http://example.com/")).willReturn(true)
+
+        mockMvc.perform((post("/api/link")
+            .param("url", "http://www.example.com/")
+            .param("limit", "1")))
+
+        mockMvc.perform(get("/{id}", "key"))
+            .andExpect(status().isTemporaryRedirect)
+            .andDo(print())
+
+        mockMvc.perform(get("/{id}", "key"))
+            .andExpect(status().isTooManyRequests)
+    }
+
     /**
      * Test de POST /api/link
      */
