@@ -82,6 +82,7 @@ project(":delivery") {
         "implementation"("com.bucket4j:bucket4j-core:8.1.1")
         "implementation"("org.springframework.boot:spring-boot-starter-rsocket")
 
+
         "testImplementation"("org.springframework.boot:spring-boot-starter-test")
         "testImplementation"("org.mockito.kotlin:mockito-kotlin:$mockitoVersion")
         "implementation"("org.springframework.boot:spring-boot-starter-thymeleaf:2.5.3")

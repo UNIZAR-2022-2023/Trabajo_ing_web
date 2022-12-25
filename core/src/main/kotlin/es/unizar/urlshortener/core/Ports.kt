@@ -1,6 +1,9 @@
 package es.unizar.urlshortener.core
 
+
+import org.springframework.core.io.*
 import org.springframework.web.multipart.MultipartFile
+
 
 /**
  * [ClickRepositoryService] is the port to the repository that provides persistence to [Clicks][Click].
@@ -72,6 +75,12 @@ interface RedirectionLimitService {
 }
 
 /**
+ * [QRService] is the port that creates a QR code from a shortened URI.
+ *
+ * **Note**: It is a design decision to create this port. It could be part of the core .
+ */
+interface QRService{
+    fun qr(url: String): ByteArrayResource
  * Given the name of a csv file with a URL per line generates another csv file
  * with the returns the key that is used to create a short URL.
  * When the url is created optional data may be added.

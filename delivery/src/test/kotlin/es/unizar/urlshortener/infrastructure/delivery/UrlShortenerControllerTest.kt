@@ -5,7 +5,6 @@ import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
@@ -20,6 +19,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import es.unizar.urlshortener.core.usecases.GenerateQRUseCase
+import org.springframework.core.io.*
 
 @WebMvcTest
 @ContextConfiguration(
@@ -45,8 +46,8 @@ class UrlShortenerControllerTest {
     private lateinit var securityService: SecurityService
 
     @MockBean
+    private lateinit var generateQRUseCase: GenerateQRUseCase
     private lateinit var reachableService: ReachableService
-
     // Bean necessary for [UrlShortenerControllerImpl]
     @MockBean
     private lateinit var csvService: CsvService
@@ -179,4 +180,48 @@ class UrlShortenerControllerTest {
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
     }
+
+    @Test
+    fun `creates returns bad request if it cant reach the website`() {
+        given(
+            securityService.isReachable("http://example.com/health")
+        ).willAnswer { throw NotReachable("http://example.com/healt") }
+
+        mockMvc.perform(
+            post("/api/link")
+                .param("url", "http://example.com/health")
+                .param("qr", "false")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.statusCode").value(400))
+    }
+
+    /**
+     * Test the requests against the Google Safe Browsing
+     */
+    @Test
+    fun `Safe browsing works propertly`() {
+        assertEquals(true, securityService.isSecureUrl("http://example.com/"))
+        assertEquals(false, securityService.isSecureUrl("http://google-analysis.info"))
+    }
+
+
+    @Test
+    fun `qr() returns a qr code when the key exists`() {
+        given(generateQRUseCase.generateQR("key")).willReturn(ByteArrayResource("test".toByteArray()))
+        mockMvc.perform(get("/{hash}/qr", "key"))
+            .andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.IMAGE_PNG))
+            .andExpect(content().bytes("test".toByteArray()))
+    }
+
+    @Test
+    fun `qr() returns a not found when the key does not exist`() {
+        given(generateQRUseCase.generateQR("key")).willAnswer { throw QrNotFound("key") }
+        mockMvc.perform(get("/{hash}/qr", "key"))
+            .andDo(print())
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.statusCode").value(404))
+    } 
 }

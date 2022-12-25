@@ -16,7 +16,15 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.net.URI
 import java.util.concurrent.BlockingQueue
-import javax.servlet.http.HttpServletRequest
+import com.google.common.net.HttpHeaders.*
+import es.unizar.urlshortener.core.usecases.*
+import org.springframework.core.io.*
+import org.springframework.hateoas.server.mvc.*
+import org.springframework.http.*
+import org.springframework.web.bind.annotation.*
+import java.net.*
+import javax.servlet.http.*
+import org.springframework.http.MediaType.*
 
 /**
  * The specification of the controller.
@@ -39,6 +47,14 @@ interface UrlShortenerController {
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
 
     /**
+
+     * Creates a qr
+     * from hash.
+     *
+     * **Note**: Delivery of use case [GenerateQRUseCase].
+     */
+    fun generateQR(hash: String, request: HttpServletRequest) : ResponseEntity<ByteArrayResource>
+
      * Creates a short url from details provided in [file].
      *
      * **Note**: Delivery of use case [ShortUrlDataOut].
@@ -52,7 +68,8 @@ interface UrlShortenerController {
 data class ShortUrlDataIn(
     val url: String,
     val sponsor: String? = null,
-    val limit: Int? = null
+    val limit: Int? = null,
+    val wantQr: Boolean
 )
 
 /**
@@ -60,7 +77,7 @@ data class ShortUrlDataIn(
  */
 data class ShortUrlDataOut(
     val url: URI? = null,
-    val properties: Map<String, Any> = emptyMap()
+    val qr: URI? = null
 )
 
 /**
@@ -75,6 +92,7 @@ class UrlShortenerControllerImpl(
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val reachableService: ReachableService,
     val securityService: SecurityService,
+    val generateQRUseCase: GenerateQRUseCase,
     val csvService: CsvService
 ) : UrlShortenerController {
 
@@ -107,9 +125,9 @@ class UrlShortenerControllerImpl(
             }
         }
 
-    @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
+    @PostMapping("/api/link", consumes = [APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
-        createShortUrlUseCase.create(
+            createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
@@ -120,15 +138,26 @@ class UrlShortenerControllerImpl(
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
-
+            var qr: URI? = null
+            if (data.wantQr) { qr = URI.create("http://localhost:8080" + url.path + "/qr") }
             // Send the URL to the validation queue
+            println("Añadiendo nueva URL: ${data.url}")
+            println("Añadiendo nuevo QR: $qr")
             println("Adding new URL to the validation queue: ${data.url}")
             validationQueue?.put(data.url)
 
             val response = ShortUrlDataOut(
-                url = url
+                url = url,
+                qr = qr
             )
             ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
+        }
+    @GetMapping("/{hash}/qr")
+    override fun generateQR(@PathVariable hash: String, request: HttpServletRequest) : ResponseEntity<ByteArrayResource> =
+        generateQRUseCase.generateQR(hash).let {
+            val h = HttpHeaders()
+            h.set(CONTENT_TYPE, IMAGE_PNG_VALUE)
+            ResponseEntity<ByteArrayResource>(it, h, HttpStatus.OK)
         }
 
     @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

@@ -1,5 +1,12 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
+
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.google.common.hash.*
+import es.unizar.urlshortener.core.*
+import io.github.g0dkar.qrcode.*
 import com.google.common.hash.Hashing
 import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.ReachableService
@@ -11,11 +18,17 @@ import org.springframework.web.multipart.MultipartFile
 import java.io.Serializable
 import java.net.URI
 import java.nio.charset.StandardCharsets
+import org.apache.commons.validator.routines.*
+import org.springframework.core.io.*
+import org.springframework.util.MimeTypeUtils.*
+import java.io.*
+import java.nio.charset.*
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Refill
 import io.github.bucket4j.Bucket
+
 
 /**
  * Implementation of the port [ValidatorService].
@@ -184,4 +197,15 @@ class CsvServiceImpl (
         }
         return csv
     }
+}
+
+/**
+ * Implementation of the port [QRService].
+ */
+class QRServiceImpl : QRService {
+    override fun qr(url: String): ByteArrayResource =
+        ByteArrayOutputStream().let{
+            QRCode(url).render().writeImage(it)
+            ByteArrayResource(it.toByteArray(), IMAGE_PNG_VALUE)
+        }
 }
