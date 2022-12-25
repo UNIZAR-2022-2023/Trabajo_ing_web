@@ -127,7 +127,7 @@ class UrlShortenerControllerImpl(
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
             var qr: URI? = null
-            if (data.wantQr) { qr = URI.create("http://localhost:8080" + url.path + "/qr") }
+            if (data.wantQr) { qr = URI.create(url.toString() + "/qr") }
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
             println("Añadiendo nuevo QR: $qr")
@@ -165,7 +165,8 @@ class UrlShortenerControllerImpl(
                     data = ShortUrlProperties(
                         ip = request.remoteAddr,
                         sponsor = null
-                    )
+                    ),
+                    request = request
                 )
 
                 h.set("Content-Type", "text/csv")

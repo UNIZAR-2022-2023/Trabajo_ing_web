@@ -10,6 +10,7 @@ import io.github.bucket4j.Refill
 import io.github.g0dkar.qrcode.*
 import org.apache.commons.validator.routines.*
 import org.springframework.core.io.*
+import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpEntity
 import org.springframework.util.MimeTypeUtils.*
 import org.springframework.web.client.RestTemplate
@@ -19,6 +20,7 @@ import java.net.URI
 import java.nio.charset.*
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import javax.servlet.http.HttpServletRequest
 
 
 /**
@@ -171,7 +173,7 @@ class RedirectionLimitServiceImpl : RedirectionLimitService {
 class CsvServiceImpl (
     private val createShortUrlUseCase: CreateShortUrlUseCase
 ) : CsvService {
-    override fun create(file: MultipartFile, data: ShortUrlProperties): String {
+    override fun create(file: MultipartFile, data: ShortUrlProperties, request: HttpServletRequest): String {
         var csv = String()
 
         file.inputStream.bufferedReader().forEachLine {
@@ -181,7 +183,8 @@ class CsvServiceImpl (
                     url = it,
                     data = data
                 )
-                csv += ",http://localhost:8080/${shortUrl.hash}\n"
+                val url = linkTo<UrlShortenerControllerImpl> { redirectTo(shortUrl.hash, request) }.toUri()
+                csv += ",$url\n"
             }catch (e: Exception) {
                 csv += ",fallo,,Invalid URL\n"
             }

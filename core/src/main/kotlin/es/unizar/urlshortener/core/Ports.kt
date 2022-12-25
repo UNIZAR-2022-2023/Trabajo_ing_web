@@ -3,6 +3,7 @@ package es.unizar.urlshortener.core
 
 import org.springframework.core.io.*
 import org.springframework.web.multipart.MultipartFile
+import javax.servlet.http.HttpServletRequest
 
 
 /**
@@ -89,5 +90,5 @@ interface QRService {
  * **Note**: This is an example of functionality.
  */
 interface CsvService {
-    fun create(file: MultipartFile, data: ShortUrlProperties): String
+    fun create(file: MultipartFile, data: ShortUrlProperties, request: HttpServletRequest): String
 }

@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import es.unizar.urlshortener.core.usecases.GenerateQRUseCase
+import org.junit.jupiter.api.Disabled
 import org.springframework.core.io.*
 
 @WebMvcTest
@@ -184,7 +185,7 @@ class UrlShortenerControllerTest {
     @Test
     fun `creates returns bad request if it cant reach the website`() {
         given(
-            securityService.isReachable("http://example.com/health")
+                reachableService.isReachableUrl("http://example.com/health")
         ).willAnswer { throw NotReachable("http://example.com/healt") }
 
         mockMvc.perform(
