@@ -15,7 +15,7 @@ data class Click(
  * A [ShortUrl] is the mapping between a remote url identified by [redirection] and a local short url identified by [hash].
  */
 data class ShortUrl(
-    val hash: String,
+    var hash: String,
     val redirection: Redirection,
     val created: OffsetDateTime = OffsetDateTime.now(),
     val properties: ShortUrlProperties = ShortUrlProperties()
@@ -36,10 +36,11 @@ data class Redirection(
 data class ShortUrlProperties(
     val ip: String? = null,
     val sponsor: String? = null,
-    var safe: String? = null,
+    var safe: Boolean? = null,
     val owner: String? = null,
     val country: String? = null,
-    val limit: Int = 0
+    val limit: Int = 0,
+    var reachable: Boolean? = null
 )
 
 /**

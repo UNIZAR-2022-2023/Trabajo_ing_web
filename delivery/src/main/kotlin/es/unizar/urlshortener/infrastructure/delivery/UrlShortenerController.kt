@@ -2,6 +2,19 @@ package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
 import org.springframework.beans.factory.annotation.Autowired
+import es.unizar.urlshortener.core.ClickProperties
+import es.unizar.urlshortener.core.ShortUrlProperties
+import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
+import es.unizar.urlshortener.core.usecases.LogClickUseCase
+import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import org.springframework.hateoas.server.mvc.linkTo
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.net.URI
 import java.util.concurrent.BlockingQueue
 import com.google.common.net.HttpHeaders.*
 import es.unizar.urlshortener.core.usecases.*
@@ -34,12 +47,19 @@ interface UrlShortenerController {
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
 
     /**
+
      * Creates a qr
      * from hash.
      *
      * **Note**: Delivery of use case [GenerateQRUseCase].
      */
     fun generateQR(hash: String, request: HttpServletRequest) : ResponseEntity<ByteArrayResource>
+
+     * Creates a short url from details provided in [file].
+     *
+     * **Note**: Delivery of use case [ShortUrlDataOut].
+     */
+    fun csv(@RequestParam("file") file: MultipartFile, request: HttpServletRequest): ResponseEntity<String>
 }
 
 /**
@@ -70,12 +90,17 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
+    val reachableService: ReachableService,
     val securityService: SecurityService,
-    val generateQRUseCase: GenerateQRUseCase
+    val generateQRUseCase: GenerateQRUseCase,
+    val csvService: CsvService
 ) : UrlShortenerController {
 
     @Autowired
     private val validationQueue : BlockingQueue<String> ?= null
+
+    @Autowired
+    private val csvQueue: BlockingQueue<MultipartFile> ?= null
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
@@ -83,17 +108,20 @@ class UrlShortenerControllerImpl(
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
             val h = HttpHeaders()
 
-            if (securityService.isValidated(id)) {
+            if (reachableService.isValidated(id) && securityService.isValidated(id)) {
                 // URL has been validated
-                if (securityService.isSecureHash(id)) {
-                    // URL is safe
+                if (!reachableService.isReachableUrl(it.target)) {
+                    throw NotReachable(it.target)
+                }
+                else if (!securityService.isSecureUrl(it.target)) {
+                    throw NotSafe(it.target)
+                } else {
+                    // URL is reachable and safe
                     h.location = URI.create(it.target)
                     ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
-                } else {
-                    throw NotSafeUrl(id)
                 }
             } else {
-                throw NotValidatedUrl(id)
+                throw NotValidated(it.target)
             }
         }
 
@@ -103,8 +131,8 @@ class UrlShortenerControllerImpl(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
-                sponsor = data.sponsor ,
-                limit = data.limit?: 0
+                sponsor = data.sponsor,
+                limit = data.limit ?: 0
             )
         ).let {
             val h = HttpHeaders()
@@ -115,6 +143,7 @@ class UrlShortenerControllerImpl(
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
             println("Añadiendo nuevo QR: $qr")
+            println("Adding new URL to the validation queue: ${data.url}")
             validationQueue?.put(data.url)
 
             val response = ShortUrlDataOut(
@@ -130,4 +159,37 @@ class UrlShortenerControllerImpl(
             h.set(CONTENT_TYPE, IMAGE_PNG_VALUE)
             ResponseEntity<ByteArrayResource>(it, h, HttpStatus.OK)
         }
+
+    @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    override fun csv(@RequestParam("file") file: MultipartFile, request: HttpServletRequest): ResponseEntity<String> {
+        val h = HttpHeaders()
+        if(file.isEmpty)  {
+            h.add("Warning", "Empty file")
+            return ResponseEntity<String>(h, HttpStatus.OK)
+        } else {
+            try {
+                // Send the CSV to the CSV queue
+                println("Adding new CSV to the CSV queue: ${file.originalFilename}")
+                csvQueue?.put(file)
+
+                val csv = csvService.create(
+                    file = file,
+                    data = ShortUrlProperties(
+                        ip = request.remoteAddr,
+                        sponsor = null
+                    )
+                )
+
+                h.set("Content-Type", "text/csv")
+                h.set("Content-Disposition", "attachment; filename=shortURLs.csv")
+                h.set("Content-Length", csv.length.toString())
+                return ResponseEntity<String>(csv, h, HttpStatus.CREATED)
+
+            } catch(e: Exception) {
+                h.add("Error", "Cannot read csv")
+                h.set("Content-Type", "application/json")
+                return ResponseEntity<String>(h, HttpStatus.BAD_REQUEST)
+            }
+        }
+    }
 }

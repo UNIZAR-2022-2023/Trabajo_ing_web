@@ -11,24 +11,23 @@ import java.util.concurrent.Executor
 import java.util.concurrent.LinkedBlockingQueue
 
 /**
- * [ValidationQueueConfig] is the configuration for the queue where the incoming URLs are going to be sent
- * for their validation against the Google Safe Browsing API.
+ * [CsvQueueConfig] is the configuration for the queue where the incoming CSVs
  * More info about blocking queue in https://www.baeldung.com/spring-async
  */
 
 @Configuration
 @EnableAsync
 @EnableScheduling
-open class ValidationQueueConfig {
+open class CsvQueueConfig {
 
     /**
      * Because of the inheritance, all the variables of type BlockingQueue with the
      * annotation of @Autowired, will be injected
      */
-    @Bean("validation")
-    open fun queue(): BlockingQueue<String> = LinkedBlockingQueue()
+    @Bean("csv")
+    open fun queue(): BlockingQueue<MultipartFile> = LinkedBlockingQueue()
 
-    @Bean("executorValidation")
+    @Bean("executorCsv")
     open fun executor(): Executor {
         val executor = ThreadPoolTaskExecutor()
         executor.maxPoolSize = 20

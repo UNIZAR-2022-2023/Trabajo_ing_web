@@ -1,6 +1,7 @@
 package es.unizar.urlshortener
 
 import es.unizar.urlshortener.core.usecases.*
+import es.unizar.urlshortener.core.ReachableService
 import es.unizar.urlshortener.infrastructure.delivery.*
 import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
@@ -9,6 +10,8 @@ import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServ
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import es.unizar.urlshortener.infrastructure.delivery.ReachableServiceImpl
+
 
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
@@ -52,5 +55,11 @@ class ApplicationConfiguration(
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService(), hashService(), redirectionLimitService(), qr())
 
     @Bean
+    fun reachableService() = ReachableServiceImpl(shortUrlRepositoryService())
+
+    @Bean
     fun securityServiceImpl() = SecurityServiceImpl(shortUrlRepositoryService())
+
+    @Bean
+    fun csvServiceImpl() = CsvServiceImpl(createShortUrlUseCase())
 }

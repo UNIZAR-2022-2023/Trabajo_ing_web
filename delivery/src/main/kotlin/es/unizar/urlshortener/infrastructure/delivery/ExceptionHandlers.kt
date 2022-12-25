@@ -25,19 +25,19 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     protected fun redirectionNotFound(ex: RedirectionNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
 
     @ResponseBody
-    @ExceptionHandler(value = [NotSafeUrl::class])
+    @ExceptionHandler(value = [NotSafe::class])
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    protected fun notSafeUrls(ex: NotSafeUrl) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
+    protected fun notSafeUrls(ex: NotSafe) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
 
     @ResponseBody
-    @ExceptionHandler(value = [NotValidatedUrl::class])
+    @ExceptionHandler(value = [NotValidated::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    protected fun notValidatedUrls(ex: NotValidatedUrl) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
+    protected fun notValidatedUrls(ex: NotValidated) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
 
     @ResponseBody
     @ExceptionHandler(value = [TooManyRedirections::class])
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    protected fun TooManyRedirections(ex: TooManyRedirections) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    protected fun TooManyRedirections(ex: TooManyRedirections) = ErrorMessage(HttpStatus.TOO_MANY_REQUESTS.value(), ex.message)
 
     @ResponseBody
     @ExceptionHandler(value = [NotReachable::class])

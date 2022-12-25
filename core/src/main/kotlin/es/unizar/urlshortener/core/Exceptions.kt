@@ -4,11 +4,9 @@ class InvalidUrlException(url: String) : Exception("[$url] does not follow a sup
 
 class RedirectionNotFound(key: String) : Exception("[$key] is not known")
 
-class NotValidatedUrl (url: String): Exception("[$url] has not validated yet")
+class NotValidated (url: String): Exception("[$url] has not validated yet")
 
-class NotSafeUrl (url: String): Exception("[$url] is not secure")
-
-class NotSafeId (key: String): Exception("[$key] has an insecure URL")
+class NotSafe (url: String): Exception("[$url] is not secure")
 
 class TooManyRedirections (key: String) : Exception(" [$key] has too many redirections")
 

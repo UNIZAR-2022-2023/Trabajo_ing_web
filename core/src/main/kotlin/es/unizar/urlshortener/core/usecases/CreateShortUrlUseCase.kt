@@ -32,6 +32,7 @@ class CreateShortUrlUseCaseImpl(
                     safe = data.safe,
                     ip = data.ip,
                     sponsor = data.sponsor,
+                    reachable = data.reachable
                 )
             )
             // Add limit to redirection

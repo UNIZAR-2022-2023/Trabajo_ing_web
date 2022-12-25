@@ -47,6 +47,10 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var generateQRUseCase: GenerateQRUseCase
+    private lateinit var reachableService: ReachableService
+    // Bean necessary for [UrlShortenerControllerImpl]
+    @MockBean
+    private lateinit var csvService: CsvService
 
     /**
      * Test de GET /{id}
@@ -55,9 +59,11 @@ class UrlShortenerControllerTest {
     fun `redirectTo returns a redirect when the key exists and is secure`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
 
+        given(reachableService.isValidated("key")).willReturn(true)
+        given(reachableService.isReachableUrl("http://example.com/")).willReturn(true)
         given(securityService.isValidated("key")).willReturn(true)
-        given(securityService.isSecureHash("key")).willReturn(true)
-        
+        given(securityService.isSecureUrl("http://example.com/")).willReturn(true)
+
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
@@ -81,7 +87,7 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns forbidden when the key exists but is not secure`() {
         given(redirectUseCase.redirectTo("key"))
-            .willAnswer { throw NotSafeUrl("key") }
+            .willAnswer { throw NotSafe("key") }
 
         mockMvc.perform(get("/{id}", "key"))
             .andDo(print())
@@ -94,8 +100,8 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns bad request when the key exists but is not validated`() {
         given(redirectUseCase.redirectTo("key"))
-            .willAnswer { throw NotValidatedUrl("key") }
-            
+            .willAnswer { throw NotValidated("key") }
+
         mockMvc.perform(get("/{id}", "key"))
             .andDo(print())
             .andExpect(status().isBadRequest)
@@ -107,17 +113,36 @@ class UrlShortenerControllerTest {
     fun `redirectTo returns a bad request when the key exists and the website is unreachable`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/health"))
         given(
-            securityService.isReachable("http://example.com/health")
+            reachableService.isReachableUrl("http://example.com/health")
         ).willAnswer { throw NotReachable("http://example.com/healt") }
 
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isBadRequest)
     }
 
+    @Disabled
+    @Test
+    fun `redirectTo returns a too many redirections when limit is reach`() {
+        given(reachableService.isValidated("key")).willReturn(true)
+        given(reachableService.isReachableUrl("http://example.com/")).willReturn(true)
+        given(securityService.isValidated("key")).willReturn(true)
+        given(securityService.isSecureUrl("http://example.com/")).willReturn(true)
+
+        mockMvc.perform((post("/api/link")
+            .param("url", "http://www.example.com/")
+            .param("limit", "1")))
+
+        mockMvc.perform(get("/{id}", "key"))
+            .andExpect(status().isTemporaryRedirect)
+            .andDo(print())
+
+        mockMvc.perform(get("/{id}", "key"))
+            .andExpect(status().isTooManyRequests)
+    }
+
     /**
      * Test de POST /api/link
      */
-    
     @Test
     fun `creates returns a basic redirect if it can compute a hash`() {
         given(
