@@ -79,9 +79,10 @@ interface RedirectionLimitService {
  *
  * **Note**: It is a design decision to create this port. It could be part of the core .
  */
-interface QRService{
+interface QRService {
     fun qr(url: String): ByteArrayResource
- * Given the name of a csv file with a URL per line generates another csv file
+}
+ /* Given the name of a csv file with a URL per line generates another csv file
  * with the returns the key that is used to create a short URL.
  * When the url is created optional data may be added.
  *

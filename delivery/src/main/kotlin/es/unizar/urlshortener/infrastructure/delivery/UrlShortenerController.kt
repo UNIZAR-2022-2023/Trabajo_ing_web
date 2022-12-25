@@ -1,30 +1,18 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
-import es.unizar.urlshortener.core.*
-import org.springframework.beans.factory.annotation.Autowired
-import es.unizar.urlshortener.core.ClickProperties
-import es.unizar.urlshortener.core.ShortUrlProperties
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
-import es.unizar.urlshortener.core.usecases.LogClickUseCase
-import es.unizar.urlshortener.core.usecases.RedirectUseCase
-import org.springframework.hateoas.server.mvc.linkTo
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
-import java.net.URI
-import java.util.concurrent.BlockingQueue
 import com.google.common.net.HttpHeaders.*
+import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.*
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.*
 import org.springframework.hateoas.server.mvc.*
 import org.springframework.http.*
-import org.springframework.web.bind.annotation.*
-import java.net.*
-import javax.servlet.http.*
 import org.springframework.http.MediaType.*
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.net.*
+import java.util.concurrent.BlockingQueue
+import javax.servlet.http.*
 
 /**
  * The specification of the controller.
@@ -55,7 +43,7 @@ interface UrlShortenerController {
      */
     fun generateQR(hash: String, request: HttpServletRequest) : ResponseEntity<ByteArrayResource>
 
-     * Creates a short url from details provided in [file].
+     /* Creates a short url from details provided in [file].
      *
      * **Note**: Delivery of use case [ShortUrlDataOut].
      */
@@ -160,7 +148,7 @@ class UrlShortenerControllerImpl(
             ResponseEntity<ByteArrayResource>(it, h, HttpStatus.OK)
         }
 
-    @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping("/api/bulk", consumes = [MULTIPART_FORM_DATA_VALUE])
     override fun csv(@RequestParam("file") file: MultipartFile, request: HttpServletRequest): ResponseEntity<String> {
         val h = HttpHeaders()
         if(file.isEmpty)  {
