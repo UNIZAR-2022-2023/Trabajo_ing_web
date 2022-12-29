@@ -48,7 +48,10 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var generateQRUseCase: GenerateQRUseCase
+
+    @MockBean
     private lateinit var reachableService: ReachableService
+
     // Bean necessary for [UrlShortenerControllerImpl]
     @MockBean
     private lateinit var csvService: CsvService
@@ -199,17 +202,10 @@ class UrlShortenerControllerTest {
     }
 
     /**
-     * Test the requests against the Google Safe Browsing
+     * Test for the QRs
      */
     @Test
-    fun `Safe browsing works propertly`() {
-        assertEquals(true, securityService.isSecureUrl("http://example.com/"))
-        assertEquals(false, securityService.isSecureUrl("http://google-analysis.info"))
-    }
-
-
-    @Test
-    fun `qr() returns a qr code when the key exists`() {
+    fun `redirectTo returns a qr code when the key exists`() {
         given(generateQRUseCase.generateQR("key")).willReturn(ByteArrayResource("test".toByteArray()))
         mockMvc.perform(get("/{hash}/qr", "key"))
             .andExpect(status().isOk)
