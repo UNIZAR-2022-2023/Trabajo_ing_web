@@ -148,7 +148,7 @@ class UrlShortenerControllerTest {
      * Test de POST /api/link
      */
     @Test
-    fun `creates returns a basic redirect if it can compute a hash`() {
+    fun `creates returns a basic redirect if it can compute a hash without qr`() {
         given(
             createShortUrlUseCase.create(
                 url = "http://example.com/",
@@ -166,6 +166,28 @@ class UrlShortenerControllerTest {
             .andExpect(status().isCreated)
             .andExpect(redirectedUrl("http://localhost/f684a3c4"))
             .andExpect(jsonPath("$.url").value("http://localhost/f684a3c4"))
+    }
+
+    @Test
+    fun `creates returns a basic redirect if it can compute a hash with qr`() {
+        given(
+                createShortUrlUseCase.create(
+                        url = "http://example.com/",
+                        data = ShortUrlProperties(ip = "127.0.0.1")
+                )
+        ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
+
+        mockMvc.perform(
+                post("/api/link")
+                        .param("url", "http://example.com/")
+                        .param("wantQr", "1")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        )
+                .andDo(print())
+                .andExpect(status().isCreated)
+                .andExpect(redirectedUrl("http://localhost/f684a3c4"))
+                .andExpect(jsonPath("$.qr").value("http://localhost/f684a3c4/qr"))
+                .andExpect(jsonPath("$.url").value("http://localhost/f684a3c4"))
     }
 
     @Test
