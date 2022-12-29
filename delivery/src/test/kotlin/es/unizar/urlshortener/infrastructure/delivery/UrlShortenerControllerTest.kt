@@ -159,6 +159,7 @@ class UrlShortenerControllerTest {
         mockMvc.perform(
             post("/api/link")
                 .param("url", "http://example.com/")
+                .param("wantQr", "0")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         )
             .andDo(print())
@@ -182,7 +183,6 @@ class UrlShortenerControllerTest {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         )
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.statusCode").value(400))
     }
 
     @Test
@@ -198,7 +198,6 @@ class UrlShortenerControllerTest {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         )
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.statusCode").value(400))
     }
 
     /**
@@ -219,6 +218,6 @@ class UrlShortenerControllerTest {
         mockMvc.perform(get("/{hash}/qr", "key"))
             .andDo(print())
             .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.statusCode").value(404))
-    } 
+    }
+
 }
