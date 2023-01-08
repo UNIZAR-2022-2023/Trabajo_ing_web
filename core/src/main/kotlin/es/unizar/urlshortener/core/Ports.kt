@@ -50,7 +50,6 @@ interface ReachableService {
  * **Note**: It is a design decision to create this port. It could be part of the core .
  */
 interface SecurityService {
-
     fun isSecureUrl(url: String): Boolean
 
     fun isValidated(hash: String): Boolean

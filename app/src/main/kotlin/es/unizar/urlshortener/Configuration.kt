@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import es.unizar.urlshortener.infrastructure.delivery.ReachableServiceImpl
 
-
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
  *
@@ -42,6 +41,10 @@ class ApplicationConfiguration(
     fun redirectUseCase() = RedirectUseCaseImpl(shortUrlRepositoryService(), redirectionLimitService())
 
     @Bean
+    fun infoUseCase() = InfoUseCaseImpl(shortUrlRepositoryService(), redirectionLimitService(), reachableService(),
+        securityService())
+
+    @Bean
     fun logClickUseCase() = LogClickUseCaseImpl(clickRepositoryService())
 
     @Bean
@@ -58,8 +61,8 @@ class ApplicationConfiguration(
     fun reachableService() = ReachableServiceImpl(shortUrlRepositoryService())
 
     @Bean
-    fun securityServiceImpl() = SecurityServiceImpl(shortUrlRepositoryService())
+    fun securityService() = SecurityServiceImpl(shortUrlRepositoryService())
 
     @Bean
-    fun csvServiceImpl() = CsvServiceImpl(createShortUrlUseCase())
+    fun csvService() = CsvServiceImpl(createShortUrlUseCase())
 }

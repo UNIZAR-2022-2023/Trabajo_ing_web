@@ -1,9 +1,7 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
-import es.unizar.urlshortener.core.usecases.LogClickUseCase
-import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import es.unizar.urlshortener.core.usecases.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
@@ -19,7 +17,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import es.unizar.urlshortener.core.usecases.GenerateQRUseCase
 import org.junit.jupiter.api.Disabled
 import org.springframework.core.io.*
 
@@ -52,9 +49,12 @@ class UrlShortenerControllerTest {
     @MockBean
     private lateinit var reachableService: ReachableService
 
-    // Bean necessary for [UrlShortenerControllerImpl]
+    // Beans necessary for [UrlShortenerControllerImpl]
     @MockBean
     private lateinit var csvService: CsvService
+
+    @MockBean
+    private lateinit var infoUseCase: InfoUseCase
 
     /**
      * Test de GET /{id}

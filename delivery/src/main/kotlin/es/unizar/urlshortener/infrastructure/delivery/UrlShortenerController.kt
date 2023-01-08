@@ -29,13 +29,17 @@ interface UrlShortenerController {
     /**
      * Creates a short url
      * from details provided in [data].
-     *
-     * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
 
     /**
+     * Gets info from an URL that has been posted.
+     *
+     *
+     */
+    fun getInfo(id: String, request: HttpServletRequest): ResponseEntity<InfoID>
 
+    /**
      * Creates a qr
      * from hash.
      *
@@ -78,18 +82,18 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
+    val generateQRUseCase: GenerateQRUseCase,
+    val infoUseCase: InfoUseCase,
     val reachableService: ReachableService,
     val securityService: SecurityService,
-    val generateQRUseCase: GenerateQRUseCase,
-    val redirectionLimitService: redirectionLimitService,
     val csvService: CsvService
 ) : UrlShortenerController {
 
     @Autowired
-    private val validationQueue : BlockingQueue<String> ?= null
+    private val validationQueue: BlockingQueue<String>? = null
 
     @Autowired
-    private val csvQueue: BlockingQueue<MultipartFile> ?= null
+    private val csvQueue: BlockingQueue<MultipartFile>? = null
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =
@@ -101,29 +105,7 @@ class UrlShortenerControllerImpl(
                 // URL has been validated
                 if (!reachableService.isReachableUrl(it.target)) {
                     throw NotReachable(it.target)
-                }
-                else if (!securityService.isSecureUrl(it.target)) {
-                    throw NotSafe(it.target)
-                } else {
-                    // URL is reachable and safe
-                    h.location = URI.create(it.target)
-                    ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
-                }
-            } else {
-                throw NotValidated(it.target)
-            }
-        }
-
-    @GetMapping("/api/link/{id}")
-    override fun getInfo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =  
-            if (reachableService.isValidated(id) && securityService.isValidated(id)) {
-                //First we prove the limit of redirections
-                redirectionLimitService.proveLimit(key)
-                // URL has been validated
-                if (!reachableService.isReachableUrl(it.target)) {
-                    throw NotReachable(it.target)
-                }
-                else if (!securityService.isSecureUrl(it.target)) {
+                } else if (!securityService.isSecureUrl(it.target)) {
                     throw NotSafe(it.target)
                 } else {
                     // URL is reachable and safe
@@ -137,7 +119,7 @@ class UrlShortenerControllerImpl(
 
     @PostMapping("/api/link", consumes = [APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
-            createShortUrlUseCase.create(
+        createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
@@ -149,7 +131,9 @@ class UrlShortenerControllerImpl(
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
             var qr: URI? = null
-            if (data.wantQr) { qr = URI.create(url.toString() + "/qr") }
+            if (data.wantQr) {
+                qr = URI.create(url.toString() + "/qr")
+            }
             // Send the URL to the validation queue
             println("Añadiendo nueva URL: ${data.url}")
             println("Añadiendo nuevo QR: $qr")
@@ -162,6 +146,17 @@ class UrlShortenerControllerImpl(
             )
             ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
         }
+
+    @GetMapping("/api/link/{id}")
+    override fun getInfo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<InfoID> {
+        val h = HttpHeaders()
+        val url = linkTo<UrlShortenerControllerImpl> { redirectTo(id, request) }.toUri()
+        h.location = url
+
+        val info = infoUseCase.getInfo(id)
+        return ResponseEntity<InfoID>(info, h, HttpStatus.OK)
+    }
+
     @GetMapping("/{hash}/qr")
     override fun generateQR(@PathVariable hash: String, request: HttpServletRequest) : ResponseEntity<ByteArrayResource> =
         generateQRUseCase.generateQR(hash).let {
