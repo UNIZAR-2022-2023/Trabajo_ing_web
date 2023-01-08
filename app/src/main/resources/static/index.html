@@ -25,6 +25,21 @@
                 <div>
                     <input class="center-block form-control" name="url" placeholder="Enter a URL" title="Enter a URL" type="text"/>
                 </div>
+                <div class="mt-5 relative flex items-center">
+                    <div style="margin-left: auto; margin-right: auto;">
+                        <span class="text-sm text-gray-200"
+                            style="margin-right: 5px; vertical-align: middle; padding-top: 5px"> Limit
+                            number of redirections</span>
+                    </div>
+                </div>
+                <div id="limit-redirections" class="mt-5 relative items-center">
+                    <div class="relative flex items-center">
+                        <input name="limit" type="number" min="1" value="1"
+                            class="peer block w-full rounded-md border border-gray-200 bg-white p-2 text-sm shadow-lg focus:border-black focus:outline-none focus:ring-0"
+                            placeholder="0" aria-label="Redirection limit"
+                            aria-describedby="redirection-lim">
+                    </div>
+                </div>
                 <div class="col-auto">
                     <div class="form-check mb-2">
                         <input class="form-check-input" id="Qr" name="wantQr"

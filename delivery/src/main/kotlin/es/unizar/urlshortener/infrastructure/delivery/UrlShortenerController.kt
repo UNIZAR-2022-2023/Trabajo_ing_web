@@ -81,6 +81,7 @@ class UrlShortenerControllerImpl(
     val reachableService: ReachableService,
     val securityService: SecurityService,
     val generateQRUseCase: GenerateQRUseCase,
+    val redirectionLimitService: redirectionLimitService,
     val csvService: CsvService
 ) : UrlShortenerController {
 
@@ -97,6 +98,27 @@ class UrlShortenerControllerImpl(
             val h = HttpHeaders()
 
             if (reachableService.isValidated(id) && securityService.isValidated(id)) {
+                // URL has been validated
+                if (!reachableService.isReachableUrl(it.target)) {
+                    throw NotReachable(it.target)
+                }
+                else if (!securityService.isSecureUrl(it.target)) {
+                    throw NotSafe(it.target)
+                } else {
+                    // URL is reachable and safe
+                    h.location = URI.create(it.target)
+                    ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
+                }
+            } else {
+                throw NotValidated(it.target)
+            }
+        }
+
+    @GetMapping("/api/link/{id}")
+    override fun getInfo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Void> =  
+            if (reachableService.isValidated(id) && securityService.isValidated(id)) {
+                //First we prove the limit of redirections
+                redirectionLimitService.proveLimit(key)
                 // URL has been validated
                 if (!reachableService.isReachableUrl(it.target)) {
                     throw NotReachable(it.target)
