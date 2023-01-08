@@ -26,6 +26,7 @@ import org.springframework.core.io.*
         UrlShortenerControllerImpl::class,
         RestResponseEntityExceptionHandler::class]
 )
+
 class UrlShortenerControllerTest {
 
     @Autowired

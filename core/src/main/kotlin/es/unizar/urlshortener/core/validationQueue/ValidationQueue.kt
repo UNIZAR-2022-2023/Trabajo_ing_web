@@ -44,6 +44,8 @@ open class ValidationQueue (
             shortUrlData.properties.safe = isSafe
             shortUrlData.properties.reachable = isReachable
 
+            println(shortUrlData.properties)
+
             shortUrlRepository.save(shortUrlData)
 
         } catch (e: InterruptedException) {

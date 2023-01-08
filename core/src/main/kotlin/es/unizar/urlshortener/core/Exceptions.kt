@@ -1,6 +1,6 @@
 package es.unizar.urlshortener.core
 
-const val RETRY_AFTER_VALIDATION : Long = 60
+const val RETRY_AFTER_VALIDATION : Long = 5
 
 const val RETRY_AFTER_REDIRECTIONS : Long = 60
 

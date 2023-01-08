@@ -131,12 +131,12 @@ class UrlShortenerControllerImpl(
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
             var qr: URI? = null
+
             if (data.wantQr) {
                 qr = URI.create(url.toString() + "/qr")
             }
+
             // Send the URL to the validation queue
-            println("Añadiendo nueva URL: ${data.url}")
-            println("Añadiendo nuevo QR: $qr")
             println("Adding new URL to the validation queue: ${data.url}")
             validationQueue?.put(data.url)
 
@@ -149,7 +149,6 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/api/link/{id}")
     override fun getInfo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<InfoID> {
-        println("Estoy codigo controller")
         val info = infoUseCase.getInfo(id)
 
         return ResponseEntity<InfoID>(info, HttpStatus.OK)
