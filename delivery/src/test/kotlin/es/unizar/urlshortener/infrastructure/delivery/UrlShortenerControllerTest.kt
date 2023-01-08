@@ -249,6 +249,6 @@ class UrlShortenerControllerTest {
     @Test
     fun `google safe browsing works propertly`() {
         given(securityService.isSecureUrl("http://example.com")).willReturn(true)
-        given(securityService.isSecureUrl("http://google-analysis.info/")).willReturn(false)
+        given(securityService.isSecureUrl("https://testsafebrowsing.appspot.com/s/phishing.html")).willReturn(false)
     }
 }

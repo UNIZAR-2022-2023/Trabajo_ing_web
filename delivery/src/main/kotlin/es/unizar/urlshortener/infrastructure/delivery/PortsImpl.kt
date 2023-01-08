@@ -1,6 +1,5 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
-
 import com.google.common.hash.*
 import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
