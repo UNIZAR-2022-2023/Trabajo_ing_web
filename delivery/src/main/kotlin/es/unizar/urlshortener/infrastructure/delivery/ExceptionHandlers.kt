@@ -1,7 +1,9 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
@@ -32,12 +34,27 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ResponseBody
     @ExceptionHandler(value = [NotValidated::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    protected fun notValidatedUrls(ex: NotValidated) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
+    protected fun notValidatedUrls(ex: NotValidated) : ResponseEntity<ErrorMessage> {
+        val h = HttpHeaders()
+        h.set("Retry-After", ex.retryAfter.toString())
+        return ResponseEntity<ErrorMessage>(
+            ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message),
+            h,
+            HttpStatus.BAD_REQUEST
+        )    }
 
     @ResponseBody
     @ExceptionHandler(value = [TooManyRedirections::class])
     @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
-    protected fun TooManyRedirections(ex: TooManyRedirections) = ErrorMessage(HttpStatus.TOO_MANY_REQUESTS.value(), ex.message)
+    protected fun tooManyRedirections(ex: TooManyRedirections) : ResponseEntity<ErrorMessage> {
+        val h = HttpHeaders()
+        h.set("Retry-After", ex.retryAfter.toString())
+        return ResponseEntity<ErrorMessage>(
+            ErrorMessage(HttpStatus.TOO_MANY_REQUESTS.value(), ex.message),
+            h,
+            HttpStatus.TOO_MANY_REQUESTS
+        )
+    }
 
     @ResponseBody
     @ExceptionHandler(value = [NotReachable::class])
@@ -47,7 +64,7 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ResponseBody
     @ExceptionHandler(value = [QrNotFound::class])
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    protected fun QrNotFound(ex: QrNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
+    protected fun qrNotFound(ex: QrNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
 }
 
 data class ErrorMessage(

@@ -161,7 +161,7 @@ class RedirectionLimitServiceImpl : RedirectionLimitService {
          if (buckets[hash] != null) {
              val prove = buckets[hash]?.tryConsumeAndReturnRemaining(1)
              if (!prove?.isConsumed!!) {
-                 throw TooManyRedirections(hash)
+                 throw TooManyRedirections(hash, RETRY_AFTER_REDIRECTIONS)
              }
          }
      }

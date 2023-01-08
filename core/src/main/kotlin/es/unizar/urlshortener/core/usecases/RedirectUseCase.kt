@@ -26,20 +26,7 @@ class RedirectUseCaseImpl(
             ?: throw RedirectionNotFound(key)
         // check de number of redirections
         redirectionLimitService.proveLimit(key)
-        /*
-        val urlShort = shortUrlRepository.findByHash(key)
-        if (urlShort != null) {
-            if (urlShort.properties.reachable != null && urlShort.properties.safe != null) {
-                //is checked
-                if (!urlShort.properties.safe!!) {
-                    throw NotSafe(key)
-                }
-            } else {
-                // no validated
-                throw NotValidated(key)
-            }
-        }
-        */
+
         return redirection
     }
 }

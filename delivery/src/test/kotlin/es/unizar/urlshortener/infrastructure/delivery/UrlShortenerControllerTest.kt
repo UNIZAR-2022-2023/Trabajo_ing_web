@@ -104,7 +104,7 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns bad request when the key exists but is not validated`() {
         given(redirectUseCase.redirectTo("key"))
-            .willAnswer { throw NotValidated("key") }
+            .willAnswer { throw NotValidated("key", RETRY_AFTER_VALIDATION) }
 
         mockMvc.perform(get("/{id}", "key"))
             .andDo(print())

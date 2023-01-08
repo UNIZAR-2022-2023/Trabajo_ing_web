@@ -9,7 +9,7 @@ data class InfoID(
     val id: String,
     val url: String,
     val isValidated: Boolean = true,
-    val isReadable: Boolean = true,
+    val isReachable: Boolean = true,
     val isSafe: Boolean = true
 )
 
@@ -26,7 +26,7 @@ class InfoUseCaseImpl (
     override fun getInfo (hash: String) : InfoID {
         val url = shortUrlRepository.findByHash(hash)!!.redirection.target
 
-        if (reachableService.isValidated(url) && securityService.isValidated(url)) {
+        if (reachableService.isValidated(hash) && securityService.isValidated(hash)) {
             //First we prove the limit of redirections
             redirectionLimitService.proveLimit(hash)
             // URL has been validated
@@ -43,7 +43,7 @@ class InfoUseCaseImpl (
                 )
             }
         } else {
-            throw NotValidated(url)
+            throw NotValidated(url, RETRY_AFTER_VALIDATION)
         }
     }
 }

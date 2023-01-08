@@ -113,7 +113,7 @@ class UrlShortenerControllerImpl(
                     ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
                 }
             } else {
-                throw NotValidated(it.target)
+                throw NotValidated(it.target, es.unizar.urlshortener.core.RETRY_AFTER_VALIDATION)
             }
         }
 
@@ -149,12 +149,10 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/api/link/{id}")
     override fun getInfo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<InfoID> {
-        val h = HttpHeaders()
-        val url = linkTo<UrlShortenerControllerImpl> { redirectTo(id, request) }.toUri()
-        h.location = url
-
+        println("Estoy codigo controller")
         val info = infoUseCase.getInfo(id)
-        return ResponseEntity<InfoID>(info, h, HttpStatus.OK)
+
+        return ResponseEntity<InfoID>(info, HttpStatus.OK)
     }
 
     @GetMapping("/{hash}/qr")
@@ -186,6 +184,9 @@ class UrlShortenerControllerImpl(
                     request = request
                 )
 
+                val hash = csv.split(",")[1].split("/")[3].split("\n")[0]
+
+                h.location = linkTo<UrlShortenerControllerImpl> { redirectTo(hash, request) }.toUri()
                 h.set("Content-Type", "text/csv")
                 h.set("Content-Disposition", "attachment; filename=shortURLs.csv")
                 h.set("Content-Length", csv.length.toString())
