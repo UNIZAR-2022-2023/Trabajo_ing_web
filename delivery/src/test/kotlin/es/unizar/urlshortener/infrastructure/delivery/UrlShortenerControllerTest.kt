@@ -242,4 +242,12 @@ class UrlShortenerControllerTest {
             .andExpect(status().isNotFound)
     }
 
+    /**
+     * Test for Google Safe Browsing
+     */
+    @Test
+    fun `google safe browsing works propertly`() {
+        given(securityService.isSecureUrl("http://example.com")).willReturn(true)
+        given(securityService.isSecureUrl("http://google-analysis.info/")).willReturn(false)
+    }
 }

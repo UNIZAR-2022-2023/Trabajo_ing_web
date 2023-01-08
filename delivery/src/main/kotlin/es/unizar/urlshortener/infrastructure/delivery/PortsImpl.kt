@@ -22,7 +22,6 @@ import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.http.HttpServletRequest
 
-
 /**
  * Implementation of the port [ValidatorService].
  */
