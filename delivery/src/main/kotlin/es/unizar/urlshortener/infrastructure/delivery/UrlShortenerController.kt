@@ -103,9 +103,9 @@ class UrlShortenerControllerImpl(
 
             if (reachableService.isValidated(id) && securityService.isValidated(id)) {
                 // URL has been validated
-                if (!reachableService.isReachableUrl(it.target)) {
+                if (!reachableService.isReachable(id)) {
                     throw NotReachable(it.target)
-                } else if (!securityService.isSecureUrl(it.target)) {
+                } else if (!securityService.isSecure(id)) {
                     throw NotSafe(it.target)
                 } else {
                     // URL is reachable and safe

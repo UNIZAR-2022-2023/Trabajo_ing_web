@@ -8,6 +8,7 @@ import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
 import io.github.g0dkar.qrcode.*
 import org.apache.commons.validator.routines.*
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.*
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpEntity
@@ -58,6 +59,14 @@ class ReachableServiceImpl (
     }
 
     /**
+     * Returns true if the URL is reachable. Otherwise false
+     */
+    override fun isReachable(hash: String) : Boolean {
+        val shortUrlData = shortUrlRepository.findByHash(hash)!!
+        return shortUrlData.properties.reachable == true
+    }
+
+    /**
      * We have a blocking queue that is reading the URLs and checking if they are safe or not.
      * How to see if the URL has been validated or not? Check the column "safe". If it matches
      * with null, it hasn't been validated yet
@@ -102,6 +111,11 @@ class SecurityServiceImpl (
             println("Warning: The URL $url is insecure")
         }
         return response.length == 3
+    }
+
+    override fun isSecure(hash: String): Boolean {
+        val shortUrlData = shortUrlRepository.findByHash(hash)!!
+        return shortUrlData.properties.safe == true
     }
 
     /**

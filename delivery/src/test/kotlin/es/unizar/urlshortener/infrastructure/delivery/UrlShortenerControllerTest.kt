@@ -65,9 +65,9 @@ class UrlShortenerControllerTest {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
 
         given(reachableService.isValidated("key")).willReturn(true)
-        given(reachableService.isReachableUrl("http://example.com/")).willReturn(true)
+        given(reachableService.isReachable("key")).willReturn(true)
         given(securityService.isValidated("key")).willReturn(true)
-        given(securityService.isSecureUrl("http://example.com/")).willReturn(true)
+        given(securityService.isSecure("key")).willReturn(true)
 
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isTemporaryRedirect)

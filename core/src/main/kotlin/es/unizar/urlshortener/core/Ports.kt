@@ -41,6 +41,8 @@ interface ReachableService {
 
     fun isReachableUrl(url: String): Boolean
 
+    fun isReachable(hash: String) : Boolean
+
     fun isValidated(hash: String): Boolean
 }
 
@@ -52,6 +54,7 @@ interface ReachableService {
 interface SecurityService {
     fun isSecureUrl(url: String): Boolean
 
+    fun isSecure(hash: String): Boolean
     fun isValidated(hash: String): Boolean
 }
 
